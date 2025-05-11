@@ -4,6 +4,7 @@ import static edu.wpi.first.units.Units.*;
 
 import edu.wpi.first.wpilibj.DataLogManager;
 import frc.robot.subsystems.Intake.Intake.IntakeOutput;
+import frc.robot.subsystems.Intake.Intake.IntakeState;
 
 import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
 
@@ -17,6 +18,7 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.StringPublisher;
 import edu.wpi.first.networktables.StructArrayPublisher;
 import edu.wpi.first.networktables.StructPublisher;
 
@@ -33,13 +35,11 @@ public class Telemetry {
     private final StructArrayPublisher<SwerveModulePosition> driveModulePositions = driveStateTable.getStructArrayTopic("Module Positions", SwerveModulePosition.struct).publish();
 
     private final NetworkTable intakeStateTable = inst.getTable("Subsystems/Intake");
-    
+
+    private final StringPublisher intakeState = intakeStateTable.getStringTopic("State").publish();
     private final DoublePublisher intakePosition = intakeStateTable.getDoubleTopic("Position").publish();
     private final DoublePublisher intakeVelocity = intakeStateTable.getDoubleTopic("Velocity").publish();
     private final DoublePublisher intakeTargetPosition = intakeStateTable.getDoubleTopic("Target Position").publish();
-    private final DoublePublisher intakeTargetVelocity = intakeStateTable.getDoubleTopic("Target Velocity").publish();
-    private final DoublePublisher intakeRotorPosition = intakeStateTable.getDoubleTopic("Rotor Position").publish();
-    private final DoublePublisher intakeRotorVelocity = intakeStateTable.getDoubleTopic("Rotor Velocity").publish();
 
     private final NetworkTable simStateTable = inst.getTable("Simulation");
 
@@ -51,7 +51,6 @@ public class Telemetry {
     }
 
     public void updateSwerveTelemetry(SwerveDriveState state) {
-        //drivePose.set(state.Pose);
         drivePose.set(state.Pose);
         driveSpeeds.set(state.Speeds);
         driveModuleStates.set(state.ModuleStates);
@@ -59,14 +58,15 @@ public class Telemetry {
         driveModulePositions.set(state.ModulePositions);
     }
 
-    public void updateIntakeTelemetry(IntakeOutput state) {
+    public void updateIntakeTelemetry(IntakeOutput output) {
         mechanismPoses.set(new Pose3d[] {new Pose3d(
             new Translation3d(0.0, 0.3302, 0.17145), 
-            new Rotation3d(state.position.in(Radians), 0.0, 0.0)
+            new Rotation3d(output.position.in(Radians), 0.0, 0.0)
         )});
 
-        intakePosition.set(state.position.in(Degrees));
-        intakeVelocity.set(state.velocity.in(DegreesPerSecond));
-        intakeTargetPosition.set(state.targetPosition.in(Degrees));
+        intakeState.set(output.state.toString());
+        intakePosition.set(output.position.in(Degrees));
+        intakeVelocity.set(output.velocity.in(DegreesPerSecond));
+        intakeTargetPosition.set(output.targetPosition.in(Degrees));
     }
 }

@@ -17,7 +17,7 @@ public final class IntakeConstants {
 
 	public static final int PIVOT_MOTOR_ID = 41;
 	public static final int GRAB_MOTOR_ID = 42;
-	public static final int ALIGN_MOTOR_ID = 42;
+	public static final int ALIGN_MOTOR_ID = 43;
 
 	public static final double PIVOT_STATOR_CURRENT_LIMIT = 120.0;
 	public static final double PIVOT_SUPPLY_CURRENT_LIMIT = 40.0;

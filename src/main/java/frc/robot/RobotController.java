@@ -55,8 +55,8 @@ public class RobotController {
             )
         );
 
-		controller.b().onTrue(intake.goDown());
-		controller.a().onTrue(intake.goUp());
+		controller.b().onTrue(intake.intake());
+		controller.a().onTrue(intake.stow());
 
   	}
 

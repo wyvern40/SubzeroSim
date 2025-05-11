@@ -24,8 +24,8 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 public class Intake extends SubsystemBase {
     
 	public enum IntakeState {
-		DOWN(IntakeConstants.INTAKE_DOWN_ANGLE),
-		UP(IntakeConstants.INTAKE_UP_ANGLE);
+		INTAKE(IntakeConstants.INTAKE_DOWN_ANGLE),
+		STOW(IntakeConstants.INTAKE_UP_ANGLE);
 
 		private final Angle angle;
 
@@ -54,6 +54,8 @@ public class Intake extends SubsystemBase {
 	private TalonFX alignMotor;
 
 	private TalonFXSimState pivotMotorSim;
+	private TalonFXSimState grabMotorSim;
+	private TalonFXSimState alignMotorSim;
 
 	private final MotionMagicVoltage motionMagic = new MotionMagicVoltage(0);
 
@@ -76,7 +78,7 @@ public class Intake extends SubsystemBase {
 		setUpGrabMotor();
 		setUpAlignMotor();
 
-		state = IntakeState.UP;
+		state = IntakeState.STOW;
 
 		this.output = new IntakeOutput();
 	}
@@ -121,6 +123,8 @@ public class Intake extends SubsystemBase {
 		limitConfigs.SupplyCurrentLimitEnable = true;
 
 		grabMotor.getConfigurator().apply(limitConfigs);
+
+		grabMotorSim = new TalonFXSimState(grabMotor);
 	}
 
 	void setUpAlignMotor() {
@@ -135,11 +139,15 @@ public class Intake extends SubsystemBase {
 		limitConfigs.SupplyCurrentLimitEnable = true;
 
 		alignMotor.getConfigurator().apply(limitConfigs);
+
+		alignMotorSim = new TalonFXSimState(alignMotor);
 	}
 
 	public void simulationPeriodic() {
 		
 		pivotMotorSim.setSupplyVoltage(RobotController.getBatteryVoltage());
+		grabMotorSim.setSupplyVoltage(RobotController.getBatteryVoltage());
+		alignMotorSim.setSupplyVoltage(RobotController.getBatteryVoltage());
 
 		armSim.setInput(pivotMotor.getMotorVoltage().getValueAsDouble());
 
@@ -149,6 +157,8 @@ public class Intake extends SubsystemBase {
 		pivotMotorSim.setRotorVelocity(RadiansPerSecond.of(armSim.getVelocityRadPerSec() * IntakeConstants.PIVOT_GEAR_RATIO));
 
 		RoboRioSim.setVInVoltage(BatterySim.calculateDefaultBatteryLoadedVoltage(armSim.getCurrentDrawAmps()));
+		RoboRioSim.setVInVoltage(BatterySim.calculateDefaultBatteryLoadedVoltage(grabMotor.getStatorCurrent().getValue().in(Amps)));
+		RoboRioSim.setVInVoltage(BatterySim.calculateDefaultBatteryLoadedVoltage(grabMotor.getStatorCurrent().getValue().in(Amps)));
 		
 		output.position = pivotMotor.getPosition().getValue();
 		output.velocity = pivotMotor.getVelocity().getValue();
@@ -184,20 +194,21 @@ public class Intake extends SubsystemBase {
 		});
 	}
 
-	public Command goUp() {
-		this.state = IntakeState.UP;
-		return this.setPosition(state.angle);
-	}
-
-	public Command goDown() {
-		this.state = IntakeState.DOWN;
-		return this.setPosition(state.angle);
-	}
-
-	public Command runRollers() {
+	private Command runRollers() {
 		return this.runEnd(() -> {
 			grabMotor.set(1.0);
 			alignMotor.set(1.0);
 		}, this::stopRollers);
 	}
+
+	public Command stow() {
+		this.state = IntakeState.STOW;
+		return this.setPosition(state.angle);
+	}
+
+	public Command intake() {
+		this.state = IntakeState.INTAKE;
+		return this.setPosition(state.angle).andThen(this.runRollers());
+	}
+
 }
