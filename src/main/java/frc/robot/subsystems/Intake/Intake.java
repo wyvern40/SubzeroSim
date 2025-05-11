@@ -166,7 +166,7 @@ public class Intake extends SubsystemBase {
 		telemetryConsumer = telemetryFunction;
 	}
 
-	public IntakeOutput getoutput() {
+	public IntakeOutput getOutput() {
 		return output;
 	}
 
