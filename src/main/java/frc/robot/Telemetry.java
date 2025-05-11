@@ -1,7 +1,9 @@
 package frc.robot;
 
+import static edu.wpi.first.units.Units.*;
+
 import edu.wpi.first.wpilibj.DataLogManager;
-import frc.robot.subsystems.Intake.IntakeState;
+import frc.robot.subsystems.Intake.Intake.IntakeOutput;
 
 import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
 
@@ -26,14 +28,18 @@ public class Telemetry {
 
     private final StructPublisher<Pose2d> drivePose = driveStateTable.getStructTopic("Pose", Pose2d.struct).publish();
     private final StructPublisher<ChassisSpeeds> driveSpeeds = driveStateTable.getStructTopic("Speeds", ChassisSpeeds.struct).publish();
-    private final StructArrayPublisher<SwerveModuleState> driveModuleStates = driveStateTable.getStructArrayTopic("ModuleStates", SwerveModuleState.struct).publish();
-    private final StructArrayPublisher<SwerveModuleState> driveModuleTargets = driveStateTable.getStructArrayTopic("ModuleTargets", SwerveModuleState.struct).publish();
-    private final StructArrayPublisher<SwerveModulePosition> driveModulePositions = driveStateTable.getStructArrayTopic("ModulePositions", SwerveModulePosition.struct).publish();
+    private final StructArrayPublisher<SwerveModuleState> driveModuleStates = driveStateTable.getStructArrayTopic("Module States", SwerveModuleState.struct).publish();
+    private final StructArrayPublisher<SwerveModuleState> driveModuleTargets = driveStateTable.getStructArrayTopic("Module Targets", SwerveModuleState.struct).publish();
+    private final StructArrayPublisher<SwerveModulePosition> driveModulePositions = driveStateTable.getStructArrayTopic("Module Positions", SwerveModulePosition.struct).publish();
 
     private final NetworkTable intakeStateTable = inst.getTable("Subsystems/Intake");
     
     private final DoublePublisher intakePosition = intakeStateTable.getDoubleTopic("Position").publish();
-    private final DoublePublisher intakeTargetPosition = intakeStateTable.getDoubleTopic("Position").publish();
+    private final DoublePublisher intakeVelocity = intakeStateTable.getDoubleTopic("Velocity").publish();
+    private final DoublePublisher intakeTargetPosition = intakeStateTable.getDoubleTopic("Target Position").publish();
+    private final DoublePublisher intakeTargetVelocity = intakeStateTable.getDoubleTopic("Target Velocity").publish();
+    private final DoublePublisher intakeRotorPosition = intakeStateTable.getDoubleTopic("Rotor Position").publish();
+    private final DoublePublisher intakeRotorVelocity = intakeStateTable.getDoubleTopic("Rotor Velocity").publish();
 
     private final NetworkTable simStateTable = inst.getTable("Simulation");
 
@@ -41,10 +47,11 @@ public class Telemetry {
 
     public Telemetry() {
         DataLogManager.start();
-        mechanismPoses.set(new Pose3d[] {new Pose3d(new Translation3d(0.0, 0.3302, 0.17145), new Rotation3d())});
+        //mechanismPoses.set(new Pose3d[] {new Pose3d(new Translation3d(0.0, 0.3302, 0.17145), new Rotation3d())});
     }
 
     public void updateSwerveTelemetry(SwerveDriveState state) {
+        //drivePose.set(state.Pose);
         drivePose.set(state.Pose);
         driveSpeeds.set(state.Speeds);
         driveModuleStates.set(state.ModuleStates);
@@ -52,12 +59,14 @@ public class Telemetry {
         driveModulePositions.set(state.ModulePositions);
     }
 
-    public void updateIntakeTelemetry(IntakeState state) {
+    public void updateIntakeTelemetry(IntakeOutput state) {
         mechanismPoses.set(new Pose3d[] {new Pose3d(
             new Translation3d(0.0, 0.3302, 0.17145), 
-            new Rotation3d(state.position, 0.0, 0.0)
+            new Rotation3d(state.position.in(Radians), 0.0, 0.0)
         )});
-        intakePosition.set(state.position);
-        intakePosition.set(state.targetPosition);
+
+        intakePosition.set(state.position.in(Degrees));
+        intakeVelocity.set(state.velocity.in(DegreesPerSecond));
+        intakeTargetPosition.set(state.targetPosition.in(Degrees));
     }
 }

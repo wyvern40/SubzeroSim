@@ -28,11 +28,11 @@ public class Robot extends TimedRobot {
 
 	@Override
 	public void autonomousInit() {
-		var autoCommand = robotController.getAutoCommand();
+		//var autoCommand = robotController.getAutoCommand();
 
-		if (autoCommand != null) {
-		  	autoCommand.schedule();
-		}
+		//if (autoCommand != null) {
+		//  	autoCommand.schedule();
+		//}
 	}
 
 	@Override
