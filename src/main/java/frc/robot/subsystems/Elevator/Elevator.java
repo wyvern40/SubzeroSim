@@ -26,16 +26,27 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Elevator extends SubsystemBase {
     
+	private static Elevator instance;
+
+	public static synchronized Elevator getInstance() {
+		if (instance == null) {
+			instance = new Elevator();
+		}
+
+		return instance;
+	}
+
 	public enum ElevatorState {
-        L2(0.0),
-        L3(0.0),
-		L4(0.0),
-		CORAL_STOW(0.0);
+		CORAL_STOW(ElevatorConstants.CORAL_STOW_SETPOINT),
+        L2(ElevatorConstants.CORAL_L2_SETPOINT),
+        L3(ElevatorConstants.CORAL_L3_SETPOINT),
+		L4(ElevatorConstants.CORAL_L4_SETPOINT);
+		
 
-		private final double position;
+		private final double setpoint;
 
-		ElevatorState(double position) {
-			this.position = position;
+		ElevatorState(double setpoint) {
+			this.setpoint = setpoint;
 		}
 	}
 
@@ -43,10 +54,14 @@ public class Elevator extends SubsystemBase {
 
 		public ElevatorState state;
 
-		public Angle position;
-		public AngularVelocity velocity;
+		public Distance position;
+		public LinearVelocity velocity;
 
-		public Angle targetPosition;
+		public Distance targetPosition;
+		public LinearVelocity targetVelocity;
+
+		public Angle rotorPosition;
+		public AngularVelocity rotorVelocity;
 		
 	}
 
@@ -104,7 +119,7 @@ public class Elevator extends SubsystemBase {
 		limitConfigs.SupplyCurrentLimit = ElevatorConstants.SUPPLY_CURRENT_LIMIT;
 		limitConfigs.SupplyCurrentLimitEnable = true;
 
-		var feedbackConfigs = new FeedbackConfigs().withSensorToMechanismRatio(ElevatorConstants.GEAR_RATIO);
+		var feedbackConfigs = new FeedbackConfigs().withSensorToMechanismRatio(ElevatorConstants.DISTANCE_TO_ROTATIONS);
 
 		leaderMotor.getConfigurator().apply(talonFXConfigs);
 		leaderMotor.getConfigurator().apply(limitConfigs);
@@ -121,15 +136,19 @@ public class Elevator extends SubsystemBase {
 
 		elevatorSim.update(0.020);
 
-		leaderMotorSim.setRawRotorPosition(Radians.of(elevatorSim.getPositionMeters() * ElevatorConstants.GEAR_RATIO));
-		leaderMotorSim.setRotorVelocity(RadiansPerSecond.of(elevatorSim.getVelocityMetersPerSecond() * ElevatorConstants.GEAR_RATIO));
+		leaderMotorSim.setRawRotorPosition(Rotations.of(elevatorSim.getPositionMeters() * ElevatorConstants.DISTANCE_TO_ROTATIONS));
+		leaderMotorSim.setRotorVelocity(RotationsPerSecond.of(elevatorSim.getVelocityMetersPerSecond() * ElevatorConstants.DISTANCE_TO_ROTATIONS));
 
 		RoboRioSim.setVInVoltage(BatterySim.calculateDefaultBatteryLoadedVoltage(elevatorSim.getCurrentDrawAmps()));
 		
-		output.position = leaderMotor.getPosition().getValue();
-		output.velocity = leaderMotor.getVelocity().getValue();
+		output.position = Meters.of(leaderMotor.getPosition().getValueAsDouble());
+		output.velocity = MetersPerSecond.of(leaderMotor.getVelocity().getValueAsDouble());
+		
+		output.targetPosition = Meters.of(leaderMotor.getClosedLoopReference().getValue());
+		output.targetVelocity = MetersPerSecond.of(leaderMotor.getClosedLoopReferenceSlope().getValue());
 
-		output.targetPosition = Rotations.of(leaderMotor.getClosedLoopReference().getValue());
+		output.rotorPosition = leaderMotor.getRotorPosition().getValue();
+		output.rotorVelocity = leaderMotor.getRotorVelocity().getValue();
 
 		output.state = state;
 
@@ -144,6 +163,23 @@ public class Elevator extends SubsystemBase {
 
 	public ElevatorOutput getOutput() {
 		return output;
+	}
+	
+	private double setpointToPosition(double setpoint) {
+		if(setpoint <= 1.0) {
+			return setpoint * ElevatorConstants.MAX_CARRIAGE_DISTANCE.in(Meters);
+		} else {
+			return setpoint * (ElevatorConstants.MAX_POSITION.in(Meters) / 2.0);
+		}
+	}
+
+	public Command requestState(ElevatorState state) {
+		return this.run(() -> {
+			leaderMotor.setControl(motionMagic
+				.withSlot(0)
+				.withPosition(setpointToPosition(state.setpoint))
+			);
+		});
 	}
 
 }

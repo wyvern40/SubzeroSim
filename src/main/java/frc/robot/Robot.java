@@ -18,6 +18,7 @@ public class Robot extends TimedRobot {
 	@Override
 	public void robotPeriodic() {
 		CommandScheduler.getInstance().run();
+		robotController.updateTelemetry();
 	}
 
 	@Override
@@ -28,20 +29,18 @@ public class Robot extends TimedRobot {
 
 	@Override
 	public void autonomousInit() {
-		//var autoCommand = robotController.getAutoCommand();
+		var autoCommand = robotController.getAutoCommand();
 
-		//if (autoCommand != null) {
-		//  	autoCommand.schedule();
-		//}
+		if (autoCommand != null) {
+		  	autoCommand.schedule();
+		}
 	}
 
 	@Override
 	public void autonomousPeriodic() {}
 
 	@Override
-	public void teleopInit() {
-
-	}
+	public void teleopInit() {}
 
 	@Override
 	public void teleopPeriodic() {}

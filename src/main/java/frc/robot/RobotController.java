@@ -9,7 +9,10 @@ import static edu.wpi.first.units.Units.*;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.robot.subsystems.Elevator.Elevator;
+import frc.robot.subsystems.Elevator.Elevator.ElevatorState;
 import frc.robot.subsystems.Intake.Intake;
 import frc.robot.subsystems.Swerve.SwerveDrive;
 import frc.robot.subsystems.Swerve.TunerConstants;
@@ -32,9 +35,11 @@ public class RobotController {
 	
 	private final CommandXboxController controller = new CommandXboxController(0);
 
-	private final SwerveDrive swerve = TunerConstants.createDrivetrain();
+	private final SwerveDrive swerve = SwerveDrive.getInstance();
 
-	private final Intake intake = new Intake();
+	private final Intake intake = Intake.getInstance();
+
+	private final Elevator elevator = Elevator.getInstance();
 
 	private final Telemetry telemetry = new Telemetry();
 
@@ -43,6 +48,7 @@ public class RobotController {
 
 		swerve.registerTelemetry(telemetry::updateSwerveTelemetry);
 		intake.registerTelemetry(telemetry::updateIntakeTelemetry);
+		elevator.registerTelemetry(telemetry::updateElevatorTelemetry);
   	}
 
   	private void configureBindings() {
@@ -54,14 +60,15 @@ public class RobotController {
                     .withRotationalRate(-controller.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
             )
         );
-
-		controller.b().onTrue(intake.intake());
-		controller.a().onTrue(intake.stow());
-
+		
   	}
 
-	//public Command getAutoCommand() {
-		//return intake.test();
-	//}
+	public void updateTelemetry() {
+		telemetry.updateSuperstructureTelemetry();;
+	}
+
+	public Command getAutoCommand() {
+		return elevator.requestState(ElevatorState.L4);
+	}
 
 }

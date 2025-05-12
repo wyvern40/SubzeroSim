@@ -23,6 +23,16 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Intake extends SubsystemBase {
     
+	private static Intake instance;
+
+	public static synchronized Intake getInstance() {
+		if (instance == null) {
+			instance = new Intake();
+		}
+
+		return instance;
+	}
+
 	public enum IntakeState {
 		INTAKE(IntakeConstants.INTAKE_DOWN_ANGLE),
 		STOW(IntakeConstants.INTAKE_UP_ANGLE);

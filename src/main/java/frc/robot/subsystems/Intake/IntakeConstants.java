@@ -11,8 +11,6 @@ import com.ctre.phoenix6.signals.GravityTypeValue;
 
 import edu.wpi.first.units.measure.Angle;
 
-
-
 public final class IntakeConstants {
 
 	public static final int PIVOT_MOTOR_ID = 41;
@@ -41,7 +39,6 @@ public final class IntakeConstants {
 	
 	public static final double PIVOT_GEAR_RATIO = 75.7201646;
 
-	public static final double MASS = 13.1956993;
 	public static final double MOI = 0.13845787;
 	public static final double LENGTH = 13.669;
 

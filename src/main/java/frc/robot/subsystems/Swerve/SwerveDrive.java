@@ -30,6 +30,16 @@ import frc.robot.subsystems.Swerve.TunerConstants.TunerSwerveDrivetrain;
  */
 public class SwerveDrive extends TunerSwerveDrivetrain implements Subsystem {
     
+    private static SwerveDrive instance;
+
+	public static synchronized SwerveDrive getInstance() {
+		if (instance == null) {
+			instance = TunerConstants.createDrivetrain();
+		}
+
+		return instance;
+	}
+
     private static final double kSimLoopPeriod = 0.005; // 5 ms
     private Notifier m_simNotifier = null;
     private double m_lastSimTime;
