@@ -19,6 +19,7 @@ import edu.wpi.first.wpilibj.simulation.BatterySim;
 import edu.wpi.first.wpilibj.simulation.RoboRioSim;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Intake extends SubsystemBase {
