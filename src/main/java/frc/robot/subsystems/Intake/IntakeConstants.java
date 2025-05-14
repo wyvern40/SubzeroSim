@@ -1,7 +1,3 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
-
 package frc.robot.subsystems.Intake;
 
 import static edu.wpi.first.units.Units.*;
@@ -10,6 +6,7 @@ import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.signals.GravityTypeValue;
 
 import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.Distance;
 
 public final class IntakeConstants {
 
@@ -39,8 +36,8 @@ public final class IntakeConstants {
 	
 	public static final double PIVOT_GEAR_RATIO = 75.7201646;
 
-	public static final double MOI = 0.13845787;
-	public static final double LENGTH = 13.669;
+	public static final double MOI = 0.06280341;
+	public static final Distance LENGTH = Inches.of(13.669);
 
 	public static final Angle MIN_ANGLE = Degrees.of(0.0);
 	public static final Angle MAX_ANGLE = Degrees.of(130.0);

@@ -19,7 +19,6 @@ import edu.wpi.first.wpilibj.simulation.BatterySim;
 import edu.wpi.first.wpilibj.simulation.RoboRioSim;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Intake extends SubsystemBase {
@@ -57,16 +56,15 @@ public class Intake extends SubsystemBase {
 	}
 
 	private IntakeOutput output;
-
 	private IntakeState state;
 
-	private TalonFX pivotMotor;
-	private TalonFX grabMotor;
-	private TalonFX alignMotor;
+	private final TalonFX pivotMotor = new TalonFX(IntakeConstants.PIVOT_MOTOR_ID);
+	private final TalonFX grabMotor = new TalonFX(IntakeConstants.GRAB_MOTOR_ID);
+	private final TalonFX alignMotor = new TalonFX(IntakeConstants.ALIGN_MOTOR_ID);
 
-	private TalonFXSimState pivotMotorSim;
-	private TalonFXSimState grabMotorSim;
-	private TalonFXSimState alignMotorSim;
+	private final TalonFXSimState pivotMotorSim = pivotMotor.getSimState();
+	private final TalonFXSimState grabMotorSim = grabMotor.getSimState();
+	private final TalonFXSimState alignMotorSim = alignMotor.getSimState();
 
 	private final MotionMagicVoltage motionMagic = new MotionMagicVoltage(0);
 
@@ -76,7 +74,7 @@ public class Intake extends SubsystemBase {
 		DCMotor.getKrakenX60(1), 
 		IntakeConstants.PIVOT_GEAR_RATIO,
 		IntakeConstants.MOI,
-		IntakeConstants.LENGTH,
+		IntakeConstants.LENGTH.in(Meters),
 		IntakeConstants.MIN_ANGLE.in(Radians),
 		IntakeConstants.MAX_ANGLE.in(Radians),
 		true,
@@ -95,8 +93,6 @@ public class Intake extends SubsystemBase {
 	}
 
 	void setUpPivotMotor() {
-
-		pivotMotor = new TalonFX(IntakeConstants.PIVOT_MOTOR_ID);
 
 		var talonFXConfigs = new TalonFXConfiguration();
 
@@ -118,12 +114,9 @@ public class Intake extends SubsystemBase {
 		pivotMotor.getConfigurator().apply(talonFXConfigs);
 		pivotMotor.getConfigurator().apply(limitConfigs);
 		pivotMotor.getConfigurator().apply(feedbackConfigs);
-		
-		pivotMotorSim = pivotMotor.getSimState();
 	}
 
 	void setUpGrabMotor() {
-		grabMotor = new TalonFX(IntakeConstants.GRAB_MOTOR_ID);
 
 		var limitConfigs = new CurrentLimitsConfigs();
 
@@ -134,12 +127,9 @@ public class Intake extends SubsystemBase {
 		limitConfigs.SupplyCurrentLimitEnable = true;
 
 		grabMotor.getConfigurator().apply(limitConfigs);
-
-		grabMotorSim = new TalonFXSimState(grabMotor);
 	}
 
 	void setUpAlignMotor() {
-		alignMotor = new TalonFX(IntakeConstants.ALIGN_MOTOR_ID);
 
 		var limitConfigs = new CurrentLimitsConfigs();
 
@@ -150,8 +140,6 @@ public class Intake extends SubsystemBase {
 		limitConfigs.SupplyCurrentLimitEnable = true;
 
 		alignMotor.getConfigurator().apply(limitConfigs);
-
-		alignMotorSim = new TalonFXSimState(alignMotor);
 	}
 
 	public void simulationPeriodic() {
