@@ -18,8 +18,10 @@ import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.BatterySim;
 import edu.wpi.first.wpilibj.simulation.RoboRioSim;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
-public class Arm {
+public class Arm extends SubsystemBase {
 
     private static Arm instance;
 
@@ -155,5 +157,19 @@ public class Arm {
 		if(telemetryConsumer != null) {
 			telemetryConsumer.accept(output);
 		}
+	}
+
+    public ArmOutput getOutput() {
+		return output;
+	}
+
+    public Command requestState(ArmState state) {
+		this.state = state;
+		return this.run(() -> {
+            pivotMotor.setControl(motionMagic
+			    .withSlot(0)
+			    .withPosition(state.angle)
+		    );
+        });
 	}
 }

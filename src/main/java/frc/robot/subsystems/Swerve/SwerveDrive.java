@@ -6,6 +6,10 @@ import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveRequest;
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.config.PIDConstants;
+import com.pathplanner.lib.config.RobotConfig;
+import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.util.DriveFeedforwards;
 
 import edu.wpi.first.math.Matrix;
@@ -40,6 +44,13 @@ public class SwerveDrive extends TunerSwerveDrivetrain implements Subsystem {
 		return instance;
 	}
 
+    public enum SwerveState {
+        DRIVER_CONTROL(),
+        PATHING(),
+        ALIGNING(),
+        STOPPED();
+    }
+
     private static final double kSimLoopPeriod = 0.005; // 5 ms
     private Notifier m_simNotifier = null;
     private double m_lastSimTime;
@@ -71,71 +82,27 @@ public class SwerveDrive extends TunerSwerveDrivetrain implements Subsystem {
         if (Utils.isSimulation()) {
             startSimThread();
         }
-    }
-
-    /**
-     * Constructs a CTRE SwerveDrivetrain using the specified constants.
-     * <p>
-     * This constructs the underlying hardware devices, so users should not
-     * construct
-     * the devices themselves. If they need the devices, they can access them
-     * through
-     * getters in the classes.
-     *
-     * @param drivetrainConstants     Drivetrain-wide constants for the swerve drive
-     * @param odometryUpdateFrequency The frequency to run the odometry loop. If
-     *                                unspecified or set to 0 Hz, this is 250 Hz on
-     *                                CAN FD, and 100 Hz on CAN 2.0.
-     * @param modules                 Constants for each specific module
-     */
-    public SwerveDrive(SwerveDrivetrainConstants drivetrainConstants, double odometryUpdateFrequency, SwerveModuleConstants<?, ?, ?>... modules) {
-
-        super(drivetrainConstants, odometryUpdateFrequency, modules);
-
-        if (Utils.isSimulation()) {
-            startSimThread();
-        }
-    }
-
-    /**
-     * Constructs a CTRE SwerveDrivetrain using the specified constants.
-     * <p>
-     * This constructs the underlying hardware devices, so users should not
-     * construct
-     * the devices themselves. If they need the devices, they can access them
-     * through
-     * getters in the classes.
-     *
-     * @param drivetrainConstants       Drivetrain-wide constants for the swerve
-     *                                  drive
-     * @param odometryUpdateFrequency   The frequency to run the odometry loop. If
-     *                                  unspecified or set to 0 Hz, this is 250 Hz
-     *                                  on
-     *                                  CAN FD, and 100 Hz on CAN 2.0.
-     * @param odometryStandardDeviation The standard deviation for odometry
-     *                                  calculation
-     *                                  in the form [x, y, theta]ᵀ, with units in
-     *                                  meters
-     *                                  and radians
-     * @param visionStandardDeviation   The standard deviation for vision
-     *                                  calculation
-     *                                  in the form [x, y, theta]ᵀ, with units in
-     *                                  meters
-     *                                  and radians
-     * @param modules                   Constants for each specific module
-     */
-    public SwerveDrive(
-        SwerveDrivetrainConstants drivetrainConstants,
-        double odometryUpdateFrequency,
-        Matrix<N3, N1> odometryStandardDeviation,
-        Matrix<N3, N1> visionStandardDeviation,
-        SwerveModuleConstants<?, ?, ?>... modules
-    ) {
-        super(drivetrainConstants, odometryUpdateFrequency, odometryStandardDeviation, visionStandardDeviation, modules);
-
-        if (Utils.isSimulation()) {
-            startSimThread();
-        }
+        
+        //AutoBuilder.configure(
+        //    this::getPose,
+        //    this::resetPose,
+        //    () -> getState().Speeds,
+        //    (speeds, feedforwards) -> drivetrainConstants(speeds, feedforwards)
+        //    new PPHolonomicDriveController(new PIDConstants(5.0, 0.0, 0.0), new PIDConstants(5.0, 0.0, 0.0)),
+        //    RobotConfig 
+        //    () -> {
+        //      // Boolean supplier that controls when the path will be mirrored for the red alliance
+        //      // This will flip the path being followed to the red side of the field.
+        //      // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
+        //
+        //      var alliance = DriverStation.getAlliance();
+        //      if (alliance.isPresent()) {
+        //        return alliance.get() == DriverStation.Alliance.Red;
+        //      }
+        //      return false;
+        //    },
+        //    this // Reference to this subsystem to set requirements
+        //);
     }
 
 
@@ -189,45 +156,11 @@ public class SwerveDrive extends TunerSwerveDrivetrain implements Subsystem {
         m_simNotifier.startPeriodic(kSimLoopPeriod);
     }
 
-    public SwerveModulePosition[] getModulePositions() {
-        return this.getState().ModulePositions;
-    }
-
-    public SwerveModuleState[] getModuleStates() {
-        return this.getState().ModuleStates;
-    }
-
-    public Pose2d getPose() {
-        return this.getState().Pose;
-    }
-
-    public ChassisSpeeds getRobotRelativeChassisSpeeds() {
-        return this.getState().Speeds;
-    }
-
-    public Double getRotationRads() {
-        return this.getState().Pose.getRotation().getRadians();
-    }
-
-    public void spinWithSpeedRad(double radSpeed) {
-        ChassisSpeeds speeds = new ChassisSpeeds(
-            this.getState().Speeds.vxMetersPerSecond,
-            this.getState().Speeds.vyMetersPerSecond, 
-            radSpeed
-        );
+    private void driveRobotRelative(ChassisSpeeds speeds, DriveFeedforwards feedforwards) {
         this.setControl(new SwerveRequest.ApplyRobotSpeeds()
             .withSpeeds(speeds)
-            .withDesaturateWheelSpeeds(true)
-        );
-    }
-
-    public void driveRobotRelative(ChassisSpeeds robotRelativeSpeeds, DriveFeedforwards driveFeedforwards) {
-        ChassisSpeeds targetSpeeds = ChassisSpeeds.discretize(robotRelativeSpeeds, this.discretizationDelta);
-        this.setControl(new SwerveRequest.ApplyRobotSpeeds()
-            .withSpeeds(targetSpeeds)
-            .withWheelForceFeedforwardsX(driveFeedforwards.robotRelativeForcesX())
-            .withWheelForceFeedforwardsY(driveFeedforwards.robotRelativeForcesY())
-            .withDesaturateWheelSpeeds(true)
+            .withWheelForceFeedforwardsX(feedforwards.robotRelativeForcesXNewtons())
+            .withWheelForceFeedforwardsY(feedforwards.robotRelativeForcesYNewtons())
         );
     }
 }

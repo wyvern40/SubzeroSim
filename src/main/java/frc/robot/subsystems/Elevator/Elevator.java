@@ -173,6 +173,7 @@ public class Elevator extends SubsystemBase {
 	}
 
 	public Command requestState(ElevatorState state) {
+		this.state = state;
 		return this.run(() -> {
 			leaderMotor.setControl(motionMagic
 				.withSlot(0)

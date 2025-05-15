@@ -34,13 +34,15 @@ public class Intake extends SubsystemBase {
 	}
 
 	public enum IntakeState {
-		INTAKE(IntakeConstants.INTAKE_DOWN_ANGLE),
-		STOW(IntakeConstants.INTAKE_UP_ANGLE);
+		INTAKE(IntakeConstants.INTAKE_DOWN_ANGLE, true),
+		STOW(IntakeConstants.INTAKE_UP_ANGLE, false);
 
 		private final Angle angle;
+		private final boolean runRollers;
 
-		IntakeState(Angle angle) {
+		IntakeState(Angle angle, boolean runRollers) {
 			this.angle = angle;
+			this.runRollers = runRollers;
 		}
 	}
 
@@ -143,7 +145,7 @@ public class Intake extends SubsystemBase {
 	}
 
 	public void simulationPeriodic() {
-		
+
 		pivotMotorSim.setSupplyVoltage(RobotController.getBatteryVoltage());
 		grabMotorSim.setSupplyVoltage(RobotController.getBatteryVoltage());
 		alignMotorSim.setSupplyVoltage(RobotController.getBatteryVoltage());
@@ -179,35 +181,35 @@ public class Intake extends SubsystemBase {
 		return output;
 	}
 
+	
+	private void setPosition(Angle position) {
+		pivotMotor.setControl(motionMagic
+			.withSlot(0)
+			.withPosition(position)
+		);
+	}
+
+	private void runRollers() {
+		grabMotor.set(1.0);
+		alignMotor.set(1.0);
+	}
+
 	private void stopRollers() {
 		grabMotor.set(0.0);
 		alignMotor.set(0.0);
 	}
-	
-	private Command setPosition(Angle position) {
-		return this.run(() -> {
-			pivotMotor.setControl(motionMagic
-				.withSlot(0)
-				.withPosition(position)
+
+	public Command requestState(IntakeState state) {
+		this.state = state;
+		if(state.runRollers) {
+			return this.runEnd(
+				() -> {setPosition(state.angle); runRollers();},
+				() -> {stopRollers();}
 			);
-		});
+		} else {
+			return this.run(() -> setPosition(state.angle));
+		}
 	}
 
-	private Command runRollers() {
-		return this.runEnd(() -> {
-			grabMotor.set(1.0);
-			alignMotor.set(1.0);
-		}, this::stopRollers);
-	}
-
-	public Command stow() {
-		this.state = IntakeState.STOW;
-		return this.setPosition(state.angle);
-	}
-
-	public Command intake() {
-		this.state = IntakeState.INTAKE;
-		return this.setPosition(state.angle).andThen(this.runRollers());
-	}
 
 }
