@@ -26,7 +26,8 @@ public class Superstructure extends SubsystemBase {
 
 	public enum SuperstructureState {
 		CORAL_STOW(SwerveState.DRIVER_CONTROL, IntakeState.STOW, ElevatorState.CORAL_STOW, ArmState.CORAL_STOW),
-		REEF_PATHING(SwerveState.PATHING, IntakeState.STOW, ElevatorState.CORAL_STOW, ArmState.CORAL_STOW),
+		CORAL_INTAKE(SwerveState.DRIVER_CONTROL, IntakeState.INTAKE, ElevatorState.CORAL_STOW, ArmState.CORAL_STOW),
+		DRIVE_TO_REEF(SwerveState.PATHING, IntakeState.STOW, ElevatorState.CORAL_STOW, ArmState.CORAL_STOW),
 		ALIGN_L2(SwerveState.ALIGNING, IntakeState.STOW, ElevatorState.L2, ArmState.CORAL_ALIGN),
 		ALIGN_L3(SwerveState.ALIGNING, IntakeState.STOW, ElevatorState.L3, ArmState.CORAL_ALIGN),
 		ALIGN_L4(SwerveState.ALIGNING, IntakeState.STOW, ElevatorState.L4, ArmState.CORAL_ALIGN),
@@ -47,6 +48,10 @@ public class Superstructure extends SubsystemBase {
 		}
 	}
 
+	private SuperstructureState state;
+
+	private SuperstructureState nextState;
+
 	private final SwerveDrive swerve = SwerveDrive.getInstance();
 
 	private final Intake intake = Intake.getInstance();
@@ -55,7 +60,18 @@ public class Superstructure extends SubsystemBase {
 
 	private final Arm arm = Arm.getInstance();
 	
-    public Superstructure() {
+	private Superstructure() {}
+	
+	public void simulationPeriodic() {
+
+		// State transistions
+		switch(state) {
+			case DRIVE_TO_REEF:
+				break;
+			default:
+				break;
+		}
+
 		
 	}
 

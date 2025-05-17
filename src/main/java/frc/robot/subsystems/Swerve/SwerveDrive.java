@@ -12,14 +12,8 @@ import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.util.DriveFeedforwards;
 
-import edu.wpi.first.math.Matrix;
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.math.kinematics.SwerveModulePosition;
-import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.math.numbers.N1;
-import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Notifier;
@@ -64,18 +58,6 @@ public class SwerveDrive extends TunerSwerveDrivetrain implements Subsystem {
     /* Keep track if we've ever applied the operator perspective before or not */
     private boolean m_hasAppliedOperatorPerspective = false;
 
-    /**
-     * Constructs a CTRE SwerveDrivetrain using the specified constants.
-     * <p>
-     * This constructs the underlying hardware devices, so users should not
-     * construct
-     * the devices themselves. If they need the devices, they can access them
-     * through
-     * getters in the classes.
-     *
-     * @param drivetrainConstants Drivetrain-wide constants for the swerve drive
-     * @param modules             Constants for each specific module
-     */
     public SwerveDrive(SwerveDrivetrainConstants drivetrainConstants, SwerveModuleConstants<?, ?, ?>... modules) {
         super(drivetrainConstants, modules);
         
@@ -83,26 +65,7 @@ public class SwerveDrive extends TunerSwerveDrivetrain implements Subsystem {
             startSimThread();
         }
         
-        //AutoBuilder.configure(
-        //    this::getPose,
-        //    this::resetPose,
-        //    () -> getState().Speeds,
-        //    (speeds, feedforwards) -> drivetrainConstants(speeds, feedforwards)
-        //    new PPHolonomicDriveController(new PIDConstants(5.0, 0.0, 0.0), new PIDConstants(5.0, 0.0, 0.0)),
-        //    RobotConfig 
-        //    () -> {
-        //      // Boolean supplier that controls when the path will be mirrored for the red alliance
-        //      // This will flip the path being followed to the red side of the field.
-        //      // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
-        //
-        //      var alliance = DriverStation.getAlliance();
-        //      if (alliance.isPresent()) {
-        //        return alliance.get() == DriverStation.Alliance.Red;
-        //      }
-        //      return false;
-        //    },
-        //    this // Reference to this subsystem to set requirements
-        //);
+        configurePathPlanner();
     }
 
 
@@ -156,6 +119,34 @@ public class SwerveDrive extends TunerSwerveDrivetrain implements Subsystem {
         m_simNotifier.startPeriodic(kSimLoopPeriod);
     }
 
+    private void configurePathPlanner() {
+
+        RobotConfig config;
+        try {
+            config = RobotConfig.fromGUISettings();
+        } catch (Exception e) {
+            throw new Error(e.getMessage());
+        }
+
+        AutoBuilder.configure(
+            () -> this.getState().Pose,
+            this::resetPose,
+            () -> getState().Speeds,
+            (speeds, feedforwards) -> driveRobotRelative(speeds, feedforwards),
+            new PPHolonomicDriveController(new PIDConstants(5.0, 0.0, 0.0), new PIDConstants(5.0, 0.0, 0.0)),
+            config,
+            () -> {
+                // Boolean supplier that controls when the path will be mirrored for the red alliance
+                var alliance = DriverStation.getAlliance();
+                if (alliance.isPresent()) {
+                    return alliance.get() == DriverStation.Alliance.Red;
+                }
+                return false;
+            },
+            this
+        );
+    }
+
     private void driveRobotRelative(ChassisSpeeds speeds, DriveFeedforwards feedforwards) {
         this.setControl(new SwerveRequest.ApplyRobotSpeeds()
             .withSpeeds(speeds)
@@ -163,4 +154,8 @@ public class SwerveDrive extends TunerSwerveDrivetrain implements Subsystem {
             .withWheelForceFeedforwardsY(feedforwards.robotRelativeForcesYNewtons())
         );
     }
+
+    //public boolean atSetpoint() {
+    //
+    //}
 }

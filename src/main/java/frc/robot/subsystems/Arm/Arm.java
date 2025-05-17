@@ -84,7 +84,7 @@ public class Arm extends SubsystemBase {
         ArmConstants.START_ANGLE.in(Radians)
     );
 
-    public Arm() {
+    private Arm() {
         
         setUpPivotMotor();
         setUpRollerMotor();

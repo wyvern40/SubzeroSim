@@ -83,7 +83,7 @@ public class Intake extends SubsystemBase {
 		IntakeConstants.START_ANGLE.in(Radians)
 	);
 
-	public Intake() {
+	private Intake() {
 
 		setUpPivotMotor();
 		setUpGrabMotor();

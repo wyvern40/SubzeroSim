@@ -88,7 +88,7 @@ public class Elevator extends SubsystemBase {
 		ElevatorConstants.START_POSITION.in(Meters)
 	);
 
-	public Elevator() {
+	private Elevator() {
 		setUpMotors();
 
 		state = ElevatorState.CORAL_STOW;
