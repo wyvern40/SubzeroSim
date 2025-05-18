@@ -8,4 +8,6 @@ public final class SwerveConstants {
 
     public static final Distance BUMPER_RADIUS = Inches.of(18.0);
 
+    public static final Distance LINEUP_DISTANCE = Meters.of(1.0);
+
 }

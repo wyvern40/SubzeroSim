@@ -19,6 +19,7 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import frc.robot.subsystems.Swerve.TunerConstants.TunerSwerveDrivetrain;
 
@@ -40,16 +41,16 @@ public class SwerveDrive extends TunerSwerveDrivetrain implements Subsystem {
 
     public enum SwerveState {
         DRIVER_CONTROL(),
-        PATHING(),
-        ALIGNING(),
+        PATH_TO_REEF(),
+        ALIGN_TO_REEF(),
         STOPPED();
     }
+
+    private SwerveState state;
 
     private static final double kSimLoopPeriod = 0.005; // 5 ms
     private Notifier m_simNotifier = null;
     private double m_lastSimTime;
-
-    private Double discretizationDelta;
 
     /* Blue alliance sees forward as 0 degrees (toward red alliance wall) */
     private static final Rotation2d kBlueAlliancePerspectiveRotation = Rotation2d.kZero;
@@ -153,6 +154,14 @@ public class SwerveDrive extends TunerSwerveDrivetrain implements Subsystem {
             .withWheelForceFeedforwardsX(feedforwards.robotRelativeForcesXNewtons())
             .withWheelForceFeedforwardsY(feedforwards.robotRelativeForcesYNewtons())
         );
+    }
+
+    public void requestState(SwerveState state) {
+        this.state = state;
+        switch(state) {
+            case PATH_TO_REEF:
+                
+        }
     }
 
     //public boolean atSetpoint() {

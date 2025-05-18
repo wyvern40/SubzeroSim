@@ -27,10 +27,10 @@ public class Superstructure extends SubsystemBase {
 	public enum SuperstructureState {
 		CORAL_STOW(SwerveState.DRIVER_CONTROL, IntakeState.STOW, ElevatorState.CORAL_STOW, ArmState.CORAL_STOW),
 		CORAL_INTAKE(SwerveState.DRIVER_CONTROL, IntakeState.INTAKE, ElevatorState.CORAL_STOW, ArmState.CORAL_STOW),
-		DRIVE_TO_REEF(SwerveState.PATHING, IntakeState.STOW, ElevatorState.CORAL_STOW, ArmState.CORAL_STOW),
-		ALIGN_L2(SwerveState.ALIGNING, IntakeState.STOW, ElevatorState.L2, ArmState.CORAL_ALIGN),
-		ALIGN_L3(SwerveState.ALIGNING, IntakeState.STOW, ElevatorState.L3, ArmState.CORAL_ALIGN),
-		ALIGN_L4(SwerveState.ALIGNING, IntakeState.STOW, ElevatorState.L4, ArmState.CORAL_ALIGN),
+		DRIVE_TO_REEF(SwerveState.PATH_TO_REEF, IntakeState.STOW, ElevatorState.CORAL_STOW, ArmState.CORAL_STOW),
+		ALIGN_L2(SwerveState.ALIGN_TO_REEF, IntakeState.STOW, ElevatorState.L2, ArmState.CORAL_ALIGN),
+		ALIGN_L3(SwerveState.ALIGN_TO_REEF, IntakeState.STOW, ElevatorState.L3, ArmState.CORAL_ALIGN),
+		ALIGN_L4(SwerveState.ALIGN_TO_REEF, IntakeState.STOW, ElevatorState.L4, ArmState.CORAL_ALIGN),
 		SCORE_L2(SwerveState.STOPPED, IntakeState.STOW, ElevatorState.L2, ArmState.CORAL_SCORE),
 		SCORE_L3(SwerveState.STOPPED, IntakeState.STOW, ElevatorState.L3, ArmState.CORAL_SCORE),
 		SCORE_L4(SwerveState.STOPPED, IntakeState.STOW, ElevatorState.L4, ArmState.CORAL_SCORE);

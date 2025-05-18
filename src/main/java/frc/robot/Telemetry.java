@@ -12,7 +12,6 @@ import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
@@ -56,7 +55,12 @@ public class Telemetry {
     private final NetworkTable simStateTable = inst.getTable("Simulation");
 
     private final StructArrayPublisher<Pose3d> mechanismPoses = simStateTable.getStructArrayTopic("MechanismPoses", Pose3d.struct).publish();
-    private final StructPublisher<Pose2d> transformTest = simStateTable.getStructTopic("Please Fucking Work", Pose2d.struct).publish();
+    private final StructPublisher<Pose2d> transformTest = simStateTable.getStructTopic("Please Fucking Work1", Pose2d.struct).publish();
+    private final StructPublisher<Pose2d> transformTest1 = simStateTable.getStructTopic("Please Fucking Work2", Pose2d.struct).publish();
+    private final StructPublisher<Pose2d> transformTest2 = simStateTable.getStructTopic("Please Fucking Work3", Pose2d.struct).publish();
+    private final StructPublisher<Pose2d> transformTest3 = simStateTable.getStructTopic("Please Fucking Work4", Pose2d.struct).publish();
+    private final StructPublisher<Pose2d> transformTest4 = simStateTable.getStructTopic("Please Fucking Work5", Pose2d.struct).publish();
+    private final StructPublisher<Pose2d> transformTest5 = simStateTable.getStructTopic("Please Fucking Work6", Pose2d.struct).publish();
 
     private Pose3d[] mechanismPoseArray = new Pose3d[3];
 
@@ -66,7 +70,12 @@ public class Telemetry {
 
     public void updateSuperstructureTelemetry() {
         mechanismPoses.set(mechanismPoseArray);
-        transformTest.set(FieldConstants.REEF_BACK_LEFT);
+        transformTest.set(FieldConstants.REEF_FRONT_LEFT);
+        transformTest1.set(FieldConstants.REEF_FRONT);
+        transformTest2.set(FieldConstants.REEF_FRONT_RIGHT);
+        transformTest3.set(FieldConstants.REEF_BACK_LEFT);
+        transformTest4.set(FieldConstants.REEF_BACK);
+        transformTest5.set(FieldConstants.REEF_BACK_RIGHT);
     }
 
     public void updateSwerveTelemetry(SwerveDriveState state) {
