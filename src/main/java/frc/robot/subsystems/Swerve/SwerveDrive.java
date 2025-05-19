@@ -174,9 +174,9 @@ public class SwerveDrive extends TunerSwerveDrivetrain implements Subsystem {
         this.state = state;
         switch(state) {
             case PATH_TO_REEF:
-                return SwerveCommands.alignToReef(this.getState().Pose, targetSide);
-            case ALIGN_TO_REEF:
                 return SwerveCommands.pathToReef(this.getState().Pose, targetSide);
+            case ALIGN_TO_REEF:
+                return SwerveCommands.alignToReef(this.getState().Pose, targetSide);
             case DRIVER_CONTROL:
                 this.getCurrentCommand().cancel();
                 return this.getDefaultCommand();
