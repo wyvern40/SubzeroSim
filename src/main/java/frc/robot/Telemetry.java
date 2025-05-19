@@ -70,12 +70,12 @@ public class Telemetry {
 
     public void updateSuperstructureTelemetry() {
         mechanismPoses.set(mechanismPoseArray);
-        transformTest.set(FieldConstants.REEF_FRONT_LEFT);
-        transformTest1.set(FieldConstants.REEF_FRONT);
-        transformTest2.set(FieldConstants.REEF_FRONT_RIGHT);
-        transformTest3.set(FieldConstants.REEF_BACK_LEFT);
-        transformTest4.set(FieldConstants.REEF_BACK);
-        transformTest5.set(FieldConstants.REEF_BACK_RIGHT);
+        transformTest.set(FieldConstants.REEF_FACES[0]);
+        transformTest1.set(FieldConstants.REEF_FACES[1]);
+        transformTest2.set(FieldConstants.REEF_FACES[2]);
+        transformTest3.set(FieldConstants.REEF_FACES[3]);
+        transformTest4.set(FieldConstants.REEF_FACES[4]);
+        transformTest5.set(FieldConstants.REEF_FACES[5]);
     }
 
     public void updateSwerveTelemetry(SwerveDriveState state) {

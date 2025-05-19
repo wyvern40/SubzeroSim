@@ -14,7 +14,10 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.subsystems.Elevator.Elevator;
 import frc.robot.subsystems.Elevator.Elevator.ElevatorState;
 import frc.robot.subsystems.Intake.Intake;
+import frc.robot.subsystems.Superstructure.Superstructure;
+import frc.robot.subsystems.Superstructure.Superstructure.SuperstructureAction;
 import frc.robot.subsystems.Swerve.SwerveDrive;
+import frc.robot.subsystems.Swerve.SwerveDrive.TargetSide;
 import frc.robot.subsystems.Swerve.TunerConstants;
 
 /**
@@ -34,6 +37,8 @@ public class RobotController {
 		.withDriveRequestType(DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive motors
 	
 	private final CommandXboxController controller = new CommandXboxController(0);
+
+	private final Superstructure superstructure = Superstructure.getInstance();
 
 	private final SwerveDrive swerve = SwerveDrive.getInstance();
 
@@ -60,11 +65,14 @@ public class RobotController {
                     .withRotationalRate(-controller.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
             )
         );
+
+		controller.y().onTrue(superstructure.setReefDirection(TargetSide.Left).andThen(superstructure.requestAction(SuperstructureAction.SCORE_CORAL)));
+		controller.a().onTrue(superstructure.setReefDirection(TargetSide.Right).andThen(superstructure.requestAction(SuperstructureAction.SCORE_CORAL)));
 		
   	}
 
 	public void updateTelemetry() {
-		telemetry.updateSuperstructureTelemetry();;
+		telemetry.updateSuperstructureTelemetry();
 	}
 
 	public Command getAutoCommand() {

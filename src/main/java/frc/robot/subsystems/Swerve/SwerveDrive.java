@@ -19,8 +19,9 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.Subsystem;
+import frc.robot.commands.SwerveCommands;
 import frc.robot.subsystems.Swerve.TunerConstants.TunerSwerveDrivetrain;
 
 /**
@@ -39,14 +40,27 @@ public class SwerveDrive extends TunerSwerveDrivetrain implements Subsystem {
 		return instance;
 	}
 
+    public enum TargetSide {
+        Left(-1.0),
+        Right(1.0);
+
+        public double direction;
+
+        TargetSide(double direction) {
+            this.direction = direction;
+        }
+    }
+
     public enum SwerveState {
-        DRIVER_CONTROL(),
-        PATH_TO_REEF(),
-        ALIGN_TO_REEF(),
-        STOPPED();
+        DRIVER_CONTROL,
+        PATH_TO_REEF,
+        ALIGN_TO_REEF,
+        STOPPED;
     }
 
     private SwerveState state;
+
+    private TargetSide targetSide;
 
     private static final double kSimLoopPeriod = 0.005; // 5 ms
     private Notifier m_simNotifier = null;
@@ -156,15 +170,25 @@ public class SwerveDrive extends TunerSwerveDrivetrain implements Subsystem {
         );
     }
 
-    public void requestState(SwerveState state) {
+    public Command requestState(SwerveState state) {
         this.state = state;
         switch(state) {
             case PATH_TO_REEF:
-                
+                return SwerveCommands.alignToReef(this.getState().Pose, targetSide);
+            case ALIGN_TO_REEF:
+                return SwerveCommands.pathToReef(this.getState().Pose, targetSide);
+            case DRIVER_CONTROL:
+                this.getCurrentCommand().cancel();
+                return this.getDefaultCommand();
+            case STOPPED:
+                this.getCurrentCommand().cancel();
+                return Commands.idle(this);
+            default:
+                return Commands.none();
         }
     }
 
-    //public boolean atSetpoint() {
-    //
-    //}
+    public void setTargetSide(TargetSide side) {
+        this.targetSide = side;
+    }
 }

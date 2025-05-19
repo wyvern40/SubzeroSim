@@ -11,6 +11,7 @@ import frc.robot.subsystems.Intake.Intake;
 import frc.robot.subsystems.Intake.Intake.IntakeState;
 import frc.robot.subsystems.Swerve.SwerveDrive;
 import frc.robot.subsystems.Swerve.SwerveDrive.SwerveState;
+import frc.robot.subsystems.Swerve.SwerveDrive.TargetSide;
 
 public class Superstructure extends SubsystemBase {
     
@@ -40,7 +41,7 @@ public class Superstructure extends SubsystemBase {
 		ElevatorState elevatorState;
 		ArmState armState;
 
-		SuperstructureState(SwerveState driveState, IntakeState intakeState, ElevatorState elevatorState, ArmState armState) {
+		SuperstructureState(SwerveState swerveState, IntakeState intakeState, ElevatorState elevatorState, ArmState armState) {
 			this.swerveState = swerveState;
 			this.intakeState = intakeState;
 			this.elevatorState = elevatorState;
@@ -48,9 +49,11 @@ public class Superstructure extends SubsystemBase {
 		}
 	}
 
-	private SuperstructureState state;
+	public enum SuperstructureAction {
+		SCORE_CORAL
+	}
 
-	private SuperstructureState nextState;
+	private SuperstructureState state = SuperstructureState.CORAL_STOW;
 
 	private final SwerveDrive swerve = SwerveDrive.getInstance();
 
@@ -75,12 +78,31 @@ public class Superstructure extends SubsystemBase {
 		
 	}
 
-	public Command requestState(SuperstructureState state) {
+	public Command swapState(SuperstructureState state) {
+		
 		return Commands.parallel(
+			swerve.requestState(state.swerveState),
 			intake.requestState(state.intakeState),
 			elevator.requestState(state.elevatorState),
 			arm.requestState(state.armState)
 		);
+
+	}
+
+	public Command requestAction(SuperstructureAction action) {
+		switch(action) {
+			case SCORE_CORAL:
+				if(state == SuperstructureState.CORAL_STOW) {
+					return swapState(SuperstructureState.DRIVE_TO_REEF);
+				}
+				return Commands.none();
+			default:
+				return Commands.none();
+		}
+	}
+
+	public Command setReefDirection(TargetSide side) {
+		return this.runOnce(() -> {swerve.setTargetSide(side);});
 	}
 
 }
