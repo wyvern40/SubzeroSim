@@ -49,10 +49,6 @@ public class Superstructure extends SubsystemBase {
 		}
 	}
 
-	public enum SuperstructureAction {
-		SCORE_CORAL
-	}
-
 	private SuperstructureState state = SuperstructureState.CORAL_STOW;
 
 	private final SwerveDrive swerve = SwerveDrive.getInstance();
@@ -67,42 +63,29 @@ public class Superstructure extends SubsystemBase {
 	
 	public void simulationPeriodic() {
 
-		// State transistions
-		switch(state) {
-			case DRIVE_TO_REEF:
-				break;
-			default:
-				break;
-		}
+		
 
 		
 	}
 
 	public Command swapState(SuperstructureState state) {
 		
-		return Commands.parallel(
-			swerve.requestState(state.swerveState),
-			intake.requestState(state.intakeState),
-			elevator.requestState(state.elevatorState),
-			arm.requestState(state.armState)
-		);
-
-	}
-
-	public Command requestAction(SuperstructureAction action) {
-		switch(action) {
-			case SCORE_CORAL:
-				if(state == SuperstructureState.CORAL_STOW) {
-					return swapState(SuperstructureState.DRIVE_TO_REEF);
-				}
-				return Commands.none();
-			default:
-				return Commands.none();
+		switch(state) {
+			default -> {}
 		}
+
+		swerve.requestState(state.swerveState),
+		intake.requestState(state.intakeState),
+		elevator.requestState(state.elevatorState),
+		arm.requestState(state.armState)
+
 	}
 
-	public Command setReefDirection(TargetSide side) {
-		return this.runOnce(() -> {swerve.setTargetSide(side);});
+	public Command scoreCoral() {
+		if(state = SuperstructureState.CORAL_STOW) {
+			return this.runOnce(() -> swapState(SuperstructureState.DRIVE_TO_REEF));
+		}
+		return Commands.none();
 	}
 
 }

@@ -13,6 +13,14 @@ import frc.robot.subsystems.Swerve.SwerveConstants;
 
 public class FieldConstants {
 
+    public enum GamePiece {
+        None,
+        Coral,
+        Algae
+    }
+
+    public enum branchSide {}
+
     public static final Pose2d[] REEF_FACES = new Pose2d[6];
 
     public static final Distance REEF_POLE_OFFSET = Meters.of(Units.inchesToMeters(6.5));
