@@ -3,6 +3,7 @@ package frc.robot;
 import static edu.wpi.first.units.Units.*;
 
 import edu.wpi.first.wpilibj.DataLogManager;
+import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.Elevator.ElevatorConstants;
 import frc.robot.subsystems.Elevator.Elevator.ElevatorOutput;
 import frc.robot.subsystems.Intake.Intake.IntakeOutput;
@@ -61,6 +62,7 @@ public class Telemetry {
     private final StructPublisher<Pose2d> transformTest3 = simStateTable.getStructTopic("Please Fucking Work4", Pose2d.struct).publish();
     private final StructPublisher<Pose2d> transformTest4 = simStateTable.getStructTopic("Please Fucking Work5", Pose2d.struct).publish();
     private final StructPublisher<Pose2d> transformTest5 = simStateTable.getStructTopic("Please Fucking Work6", Pose2d.struct).publish();
+    private final StringPublisher command = simStateTable.getStringTopic("yippee").publish();
 
     private Pose3d[] mechanismPoseArray = new Pose3d[3];
 
@@ -68,7 +70,7 @@ public class Telemetry {
         DataLogManager.start();
     }
 
-    public void updateSuperstructureTelemetry() {
+    public void updateSuperstructureTelemetry(Command swerveCommand) {
         mechanismPoses.set(mechanismPoseArray);
         transformTest.set(FieldConstants.REEF_FACES[0]);
         transformTest1.set(FieldConstants.REEF_FACES[1]);
@@ -76,6 +78,7 @@ public class Telemetry {
         transformTest3.set(FieldConstants.REEF_FACES[3]);
         transformTest4.set(FieldConstants.REEF_FACES[4]);
         transformTest5.set(FieldConstants.REEF_FACES[5]);
+        if(swerveCommand != null) {command.set(swerveCommand.toString());};
     }
 
     public void updateSwerveTelemetry(SwerveDriveState state) {

@@ -1,8 +1,9 @@
 package frc.robot.subsystems.Superstructure;
 
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.FieldConstants.BranchSide;
+import frc.robot.FieldConstants.GamePiece;
 import frc.robot.subsystems.Arm.Arm;
 import frc.robot.subsystems.Arm.Arm.ArmState;
 import frc.robot.subsystems.Elevator.Elevator;
@@ -11,7 +12,6 @@ import frc.robot.subsystems.Intake.Intake;
 import frc.robot.subsystems.Intake.Intake.IntakeState;
 import frc.robot.subsystems.Swerve.SwerveDrive;
 import frc.robot.subsystems.Swerve.SwerveDrive.SwerveState;
-import frc.robot.subsystems.Swerve.SwerveDrive.TargetSide;
 
 public class Superstructure extends SubsystemBase {
     
@@ -51,6 +51,8 @@ public class Superstructure extends SubsystemBase {
 
 	private SuperstructureState state = SuperstructureState.CORAL_STOW;
 
+	private GamePiece heldGamePiece = GamePiece.NONE;
+
 	private final SwerveDrive swerve = SwerveDrive.getInstance();
 
 	private final Intake intake = Intake.getInstance();
@@ -68,24 +70,32 @@ public class Superstructure extends SubsystemBase {
 		
 	}
 
-	public Command swapState(SuperstructureState state) {
-		
+	public void swapState(SuperstructureState state) {
+
 		switch(state) {
+			case SCORE_L2, SCORE_L3, SCORE_L4 -> {
+				heldGamePiece = GamePiece.NONE;
+			}
+			case CORAL_INTAKE -> {
+				heldGamePiece = GamePiece.CORAL;
+			}
 			default -> {}
 		}
 
-		swerve.requestState(state.swerveState),
-		intake.requestState(state.intakeState),
-		elevator.requestState(state.elevatorState),
-		arm.requestState(state.armState)
+		swerve.requestState(state.swerveState).schedule();
+		intake.requestState(state.intakeState).schedule();
+		elevator.requestState(state.elevatorState).schedule();
+		arm.requestState(state.armState).schedule();
 
 	}
 
-	public Command scoreCoral() {
-		if(state = SuperstructureState.CORAL_STOW) {
-			return this.runOnce(() -> swapState(SuperstructureState.DRIVE_TO_REEF));
-		}
-		return Commands.none();
+	public Command scoreCoral(BranchSide side) {
+		return this.runOnce(() -> {
+			swerve.setTargetSide(side);
+			if(state == SuperstructureState.CORAL_STOW && heldGamePiece == GamePiece.NONE) {
+				swapState(SuperstructureState.DRIVE_TO_REEF);
+			}
+		});
 	}
 
 }

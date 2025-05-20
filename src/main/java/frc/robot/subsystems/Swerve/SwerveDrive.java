@@ -21,6 +21,7 @@ import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.Subsystem;
+import frc.robot.FieldConstants.BranchSide;
 import frc.robot.commands.SwerveCommands;
 import frc.robot.subsystems.Swerve.TunerConstants.TunerSwerveDrivetrain;
 
@@ -40,17 +41,6 @@ public class SwerveDrive extends TunerSwerveDrivetrain implements Subsystem {
 		return instance;
 	}
 
-    public enum TargetSide {
-        Left(-1.0),
-        Right(1.0);
-
-        public double direction;
-
-        TargetSide(double direction) {
-            this.direction = direction;
-        }
-    }
-
     public enum SwerveState {
         DRIVER_CONTROL,
         PATH_TO_REEF,
@@ -60,7 +50,7 @@ public class SwerveDrive extends TunerSwerveDrivetrain implements Subsystem {
 
     private SwerveState state;
 
-    private TargetSide targetSide;
+    private BranchSide targetSide;
 
     private static final double kSimLoopPeriod = 0.005; // 5 ms
     private Notifier m_simNotifier = null;
@@ -188,7 +178,7 @@ public class SwerveDrive extends TunerSwerveDrivetrain implements Subsystem {
         }
     }
 
-    public void setTargetSide(TargetSide side) {
+    public void setTargetSide(BranchSide side) {
         this.targetSide = side;
     }
 }

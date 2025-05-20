@@ -8,16 +8,16 @@ import static edu.wpi.first.units.Units.*;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
+import com.pathplanner.lib.commands.PathfindingCommand;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.robot.FieldConstants.BranchSide;
 import frc.robot.subsystems.Elevator.Elevator;
 import frc.robot.subsystems.Elevator.Elevator.ElevatorState;
 import frc.robot.subsystems.Intake.Intake;
 import frc.robot.subsystems.Superstructure.Superstructure;
-import frc.robot.subsystems.Superstructure.Superstructure.SuperstructureAction;
 import frc.robot.subsystems.Swerve.SwerveDrive;
-import frc.robot.subsystems.Swerve.SwerveDrive.TargetSide;
 import frc.robot.subsystems.Swerve.TunerConstants;
 
 /**
@@ -66,13 +66,13 @@ public class RobotController {
             )
         );
 
-		controller.y().onTrue(superstructure.setReefDirection(TargetSide.Left).andThen(superstructure.requestAction(SuperstructureAction.SCORE_CORAL)));
-		controller.a().onTrue(superstructure.setReefDirection(TargetSide.Right).andThen(superstructure.requestAction(SuperstructureAction.SCORE_CORAL)));
+		controller.y().onTrue(superstructure.scoreCoral(BranchSide.LEFT));
+		controller.a().onTrue(superstructure.scoreCoral(BranchSide.RIGHT));
 		
   	}
 
 	public void updateTelemetry() {
-		telemetry.updateSuperstructureTelemetry();
+		telemetry.updateSuperstructureTelemetry(swerve.getCurrentCommand());
 	}
 
 	public Command getAutoCommand() {
