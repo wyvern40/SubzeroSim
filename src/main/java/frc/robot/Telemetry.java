@@ -2,11 +2,13 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.*;
 
+import java.util.function.Supplier;
+
 import edu.wpi.first.wpilibj.DataLogManager;
-import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.Elevator.ElevatorConstants;
-import frc.robot.subsystems.Elevator.Elevator.ElevatorOutput;
-import frc.robot.subsystems.Intake.Intake.IntakeOutput;
+import frc.robot.subsystems.Arm.Arm.ArmData;
+import frc.robot.subsystems.Elevator.Elevator.ElevatorData;
+import frc.robot.subsystems.Intake.Intake.IntakeData;
 
 import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
 
@@ -53,72 +55,91 @@ public class Telemetry {
     private final DoublePublisher elevatorRotorPosition = elevatorStateTable.getDoubleTopic("Rotor Position").publish();
     private final DoublePublisher elevatorRotorVelocity = elevatorStateTable.getDoubleTopic("Rotor Velocity").publish();
 
+    private final NetworkTable armStateTable = inst.getTable("Subsystems/Arm");
+
+    private final StringPublisher armState = armStateTable.getStringTopic("State").publish();
+    private final DoublePublisher armPosition = armStateTable.getDoubleTopic("Position").publish();
+    private final DoublePublisher armVelocity = armStateTable.getDoubleTopic("Velocity").publish();
+    private final DoublePublisher armTargetPosition = armStateTable.getDoubleTopic("Target Position").publish();
+
     private final NetworkTable simStateTable = inst.getTable("Simulation");
 
     private final StructArrayPublisher<Pose3d> mechanismPoses = simStateTable.getStructArrayTopic("MechanismPoses", Pose3d.struct).publish();
-    private final StructPublisher<Pose2d> transformTest = simStateTable.getStructTopic("Please Fucking Work1", Pose2d.struct).publish();
-    private final StructPublisher<Pose2d> transformTest1 = simStateTable.getStructTopic("Please Fucking Work2", Pose2d.struct).publish();
-    private final StructPublisher<Pose2d> transformTest2 = simStateTable.getStructTopic("Please Fucking Work3", Pose2d.struct).publish();
-    private final StructPublisher<Pose2d> transformTest3 = simStateTable.getStructTopic("Please Fucking Work4", Pose2d.struct).publish();
-    private final StructPublisher<Pose2d> transformTest4 = simStateTable.getStructTopic("Please Fucking Work5", Pose2d.struct).publish();
-    private final StructPublisher<Pose2d> transformTest5 = simStateTable.getStructTopic("Please Fucking Work6", Pose2d.struct).publish();
-    private final StringPublisher command = simStateTable.getStringTopic("yippee").publish();
 
     private Pose3d[] mechanismPoseArray = new Pose3d[3];
+
+    private Supplier<IntakeData> intakeSupplier;
+    private Supplier<ElevatorData> elevatorSupplier;
+    private Supplier<ArmData> armSupplier;
 
     public Telemetry() {
         DataLogManager.start();
     }
 
-    public void updateSuperstructureTelemetry(Command swerveCommand) {
+    public void registerSuppliers(Supplier<IntakeData> intakeSupplier, Supplier<ElevatorData> elevatorSupplier, Supplier<ArmData> armSupplier) {
+        this.intakeSupplier = intakeSupplier;
+        this.elevatorSupplier = elevatorSupplier;
+        this.armSupplier = armSupplier;
+    }
+
+    public void updateSuperstructureTelemetry() {
         mechanismPoses.set(mechanismPoseArray);
-        transformTest.set(FieldConstants.REEF_FACES[0]);
-        transformTest1.set(FieldConstants.REEF_FACES[1]);
-        transformTest2.set(FieldConstants.REEF_FACES[2]);
-        transformTest3.set(FieldConstants.REEF_FACES[3]);
-        transformTest4.set(FieldConstants.REEF_FACES[4]);
-        transformTest5.set(FieldConstants.REEF_FACES[5]);
-        if(swerveCommand != null) {command.set(swerveCommand.toString());};
     }
 
-    public void updateSwerveTelemetry(SwerveDriveState state) {
-        drivePose.set(state.Pose);
-        driveSpeeds.set(state.Speeds);
-        driveModuleStates.set(state.ModuleStates);
-        driveModuleTargets.set(state.ModuleTargets);
-        driveModulePositions.set(state.ModulePositions);
+    public void updateSwerveTelemetry(SwerveDriveState data) {
+        drivePose.set(data.Pose);
+        driveSpeeds.set(data.Speeds);
+        driveModuleStates.set(data.ModuleStates);
+        driveModuleTargets.set(data.ModuleTargets);
+        driveModulePositions.set(data.ModulePositions);
     }
 
-    public void updateIntakeTelemetry(IntakeOutput output) {
+    public void updateIntakeTelemetry() {
+
+        IntakeData data = intakeSupplier.get();
+
         mechanismPoseArray[0] = new Pose3d(
             new Translation3d(0.0, 0.3302, 0.17145),
-            new Rotation3d(output.position.in(Radians), 0.0, 0.0)
+            new Rotation3d(data.position.in(Radians), 0.0, 0.0)
         );
 
-        intakeState.set(output.state.toString());
-        intakePosition.set(output.position.in(Degrees));
-        intakeVelocity.set(output.velocity.in(DegreesPerSecond));
-        intakeTargetPosition.set(output.targetPosition.in(Degrees));
+        intakeState.set(data.state.toString());
+        intakePosition.set(data.position.in(Degrees));
+        intakeVelocity.set(data.velocity.in(DegreesPerSecond));
+        intakeTargetPosition.set(data.targetPosition.in(Degrees));
     }
 
-    public void updateElevatorTelemetry(ElevatorOutput output) {
+    public void updateElevatorTelemetry() {
+        
+        ElevatorData data = elevatorSupplier.get();
+
         mechanismPoseArray[1] = new Pose3d(
-            new Translation3d(0.0, 0.0, Math.max(0.0, output.position.in(Meters) - ElevatorConstants.MAX_CARRIAGE_DISTANCE.in(Meters))),
+            new Translation3d(0.0, 0.0, Math.max(0.0, data.position.in(Meters) - ElevatorConstants.MAX_CARRIAGE_DISTANCE.in(Meters))),
             new Rotation3d()
         );
 
         mechanismPoseArray[2] = new Pose3d(
-            new Translation3d(0.0, 0.0, output.position.in(Meters)),
+            new Translation3d(0.0, 0.0, data.position.in(Meters)),
             new Rotation3d()
         );
 
-        elevatorState.set(output.state.toString());
-        elevatorPosition.set(output.position.in(Meters));
-        elevatorVelocity.set(output.velocity.in(MetersPerSecond));
-        elevatorTargetPosition.set(output.targetPosition.in(Meters));
-        elevatorTargetVelocity.set(output.targetVelocity.in(MetersPerSecond));
-        elevatorPosition.set(output.position.in(Meters));
-        elevatorRotorPosition.set(output.rotorPosition.in(Rotations));
-        elevatorRotorVelocity.set(output.rotorVelocity.in(RotationsPerSecond));
+        elevatorState.set(data.state.toString());
+        elevatorPosition.set(data.position.in(Meters));
+        elevatorVelocity.set(data.velocity.in(MetersPerSecond));
+        elevatorTargetPosition.set(data.targetPosition.in(Meters));
+        elevatorTargetVelocity.set(data.targetVelocity.in(MetersPerSecond));
+        elevatorPosition.set(data.position.in(Meters));
+        elevatorRotorPosition.set(data.rotorPosition.in(Rotations));
+        elevatorRotorVelocity.set(data.rotorVelocity.in(RotationsPerSecond));
+    }
+
+    public void updateArmTelemetry() {
+
+        ArmData data = armSupplier.get();
+
+        armState.set(data.state.toString());
+        armPosition.set(data.position.in(Degrees));
+        armVelocity.set(data.velocity.in(DegreesPerSecond));
+        armTargetPosition.set(data.position.in(Degrees));
     }
 }

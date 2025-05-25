@@ -2,8 +2,6 @@ package frc.robot.subsystems.Arm;
 
 import static edu.wpi.first.units.Units.*;
 
-import java.util.function.Consumer;
-
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.FeedbackConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
@@ -48,7 +46,7 @@ public class Arm extends SubsystemBase {
 		}
     }
 
-    public class ArmOutput {
+    public class ArmData {
 
         public ArmState state;
 
@@ -59,7 +57,7 @@ public class Arm extends SubsystemBase {
 
     }
 
-    private ArmOutput output;
+    private ArmData data;
 
     private ArmState state;
 
@@ -71,7 +69,6 @@ public class Arm extends SubsystemBase {
 
     private final MotionMagicVoltage motionMagic = new MotionMagicVoltage(ArmConstants.START_ANGLE);
 
-    private Consumer<ArmOutput> telemetryConsumer;
 
     private final SingleJointedArmSim armSim = new SingleJointedArmSim(
         DCMotor.getKrakenX60(1),
@@ -91,7 +88,7 @@ public class Arm extends SubsystemBase {
 
         state = ArmState.STARTING;
 
-        output = new ArmOutput();
+        data = new ArmData();
 
     }
 
@@ -147,20 +144,16 @@ public class Arm extends SubsystemBase {
 		RoboRioSim.setVInVoltage(BatterySim.calculateDefaultBatteryLoadedVoltage(armSim.getCurrentDrawAmps()));
 		RoboRioSim.setVInVoltage(BatterySim.calculateDefaultBatteryLoadedVoltage(rollerMotor.getStatorCurrent().getValue().in(Amps)));
 		
-		output.position = pivotMotor.getPosition().getValue();
-		output.velocity = pivotMotor.getVelocity().getValue();
+        data.position = pivotMotor.getPosition().getValue();
+		data.velocity = pivotMotor.getVelocity().getValue();
 
-		output.targetPosition = Rotations.of(pivotMotor.getClosedLoopReference().getValue());
+		data.targetPosition = Rotations.of(pivotMotor.getClosedLoopReference().getValue());
 
-		output.state = state;
-
-		if(telemetryConsumer != null) {
-			telemetryConsumer.accept(output);
-		}
+		data.state = state;
 	}
 
-    public ArmOutput getOutput() {
-		return output;
+    public ArmData getData() {
+		return data;
 	}
 
     public Command requestState(ArmState state) {

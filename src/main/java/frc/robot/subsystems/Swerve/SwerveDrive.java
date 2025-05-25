@@ -1,5 +1,8 @@
 package frc.robot.subsystems.Swerve;
 
+import static edu.wpi.first.units.Units.*;
+
+import java.util.Arrays;
 import java.util.function.Supplier;
 
 import com.ctre.phoenix6.Utils;
@@ -13,6 +16,7 @@ import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.util.DriveFeedforwards;
 
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
@@ -21,8 +25,9 @@ import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.Subsystem;
+import frc.robot.FieldConstants;
 import frc.robot.FieldConstants.BranchSide;
-import frc.robot.commands.SwerveCommands;
+import frc.robot.commands.DriveToPoseCommand;
 import frc.robot.subsystems.Swerve.TunerConstants.TunerSwerveDrivetrain;
 
 /**
@@ -48,7 +53,7 @@ public class SwerveDrive extends TunerSwerveDrivetrain implements Subsystem {
         STOPPED;
     }
 
-    private SwerveState state;
+    //private SwerveState state;
 
     private BranchSide targetSide;
 
@@ -62,6 +67,8 @@ public class SwerveDrive extends TunerSwerveDrivetrain implements Subsystem {
     private static final Rotation2d kRedAlliancePerspectiveRotation = Rotation2d.k180deg;
     /* Keep track if we've ever applied the operator perspective before or not */
     private boolean m_hasAppliedOperatorPerspective = false;
+
+    private DriveToPoseCommand autoDriveCommand;
 
     public SwerveDrive(SwerveDrivetrainConstants drivetrainConstants, SwerveModuleConstants<?, ?, ?>... modules) {
         super(drivetrainConstants, modules);
@@ -160,25 +167,55 @@ public class SwerveDrive extends TunerSwerveDrivetrain implements Subsystem {
         );
     }
 
-    public Command requestState(SwerveState state) {
-        this.state = state;
-        switch(state) {
-            case PATH_TO_REEF:
-                return SwerveCommands.pathToReef(this.getState().Pose, targetSide);
-            case ALIGN_TO_REEF:
-                return SwerveCommands.alignToReef(this.getState().Pose, targetSide);
-            case DRIVER_CONTROL:
-                this.getCurrentCommand().cancel();
-                return this.getDefaultCommand();
-            case STOPPED:
-                this.getCurrentCommand().cancel();
-                return Commands.idle(this);
-            default:
-                return Commands.none();
+    private Command driveToReef() {
+
+        var nearestPose = this.getState().Pose.nearest(Arrays.asList(FieldConstants.REEF_FACES));
+
+        return autoDriveCommand = new DriveToPoseCommand(
+            nearestPose.transformBy(
+                new Transform2d(SwerveConstants.LINEUP_DISTANCE.unaryMinus(), targetSide.offset.unaryMinus(), Rotation2d.kZero)
+            )
+        );
+    }
+
+    private Command alignToReef() {
+
+        var nearestPose = this.getState().Pose.nearest(Arrays.asList(FieldConstants.REEF_FACES));
+
+        return autoDriveCommand = new DriveToPoseCommand(
+            nearestPose.transformBy(
+                new Transform2d(Meters.of(0.0), targetSide.offset.unaryMinus(), Rotation2d.kZero)
+            )
+        );
+    }
+
+    public boolean atTargetPose() {
+        if(autoDriveCommand != null) {
+            return autoDriveCommand.atSetpoint();
         }
+        return true;
     }
 
     public void setTargetSide(BranchSide side) {
         this.targetSide = side;
+    }
+
+    public Command requestState(SwerveState requestedState) {
+
+        //this.state = requestedState;
+        this.getCurrentCommand().cancel();
+
+        switch(requestedState) {
+            case PATH_TO_REEF:
+                return driveToReef();
+            case ALIGN_TO_REEF:
+                return alignToReef();
+            case DRIVER_CONTROL:
+                return this.getDefaultCommand();
+            case STOPPED:
+                return Commands.idle(this);
+            default:
+                return Commands.none();
+        }
     }
 }

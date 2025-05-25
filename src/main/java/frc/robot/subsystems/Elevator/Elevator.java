@@ -2,8 +2,6 @@ package frc.robot.subsystems.Elevator;
 
 import static edu.wpi.first.units.Units.*;
 
-import java.util.function.Consumer;
-
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.FeedbackConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
@@ -49,7 +47,7 @@ public class Elevator extends SubsystemBase {
 		}
 	}
 
-	public class ElevatorOutput {
+	public class ElevatorData {
 
 		public ElevatorState state;
 
@@ -64,7 +62,7 @@ public class Elevator extends SubsystemBase {
 		
 	}
 
-	private ElevatorOutput output;
+	private ElevatorData data = new ElevatorData();;
 
 	private ElevatorState state;
 
@@ -74,8 +72,6 @@ public class Elevator extends SubsystemBase {
 	private TalonFXSimState leaderMotorSim;
 
 	private final MotionMagicVoltage motionMagic = new MotionMagicVoltage(0);
-
-	private Consumer<ElevatorOutput> telemetryConsumer;
 
 	private final ElevatorSim elevatorSim = new ElevatorSim(
 		DCMotor.getKrakenX60(2), 
@@ -92,8 +88,6 @@ public class Elevator extends SubsystemBase {
 		setUpMotors();
 
 		state = ElevatorState.CORAL_STOW;
-
-		output = new ElevatorOutput();
 	}
 
 	void setUpMotors() {
@@ -140,28 +134,20 @@ public class Elevator extends SubsystemBase {
 
 		RoboRioSim.setVInVoltage(BatterySim.calculateDefaultBatteryLoadedVoltage(elevatorSim.getCurrentDrawAmps()));
 		
-		output.position = Meters.of(leaderMotor.getPosition().getValueAsDouble());
-		output.velocity = MetersPerSecond.of(leaderMotor.getVelocity().getValueAsDouble());
+		data.position = Meters.of(leaderMotor.getPosition().getValueAsDouble());
+		data.velocity = MetersPerSecond.of(leaderMotor.getVelocity().getValueAsDouble());
 		
-		output.targetPosition = Meters.of(leaderMotor.getClosedLoopReference().getValue());
-		output.targetVelocity = MetersPerSecond.of(leaderMotor.getClosedLoopReferenceSlope().getValue());
+		data.targetPosition = Meters.of(leaderMotor.getClosedLoopReference().getValue());
+		data.targetVelocity = MetersPerSecond.of(leaderMotor.getClosedLoopReferenceSlope().getValue());
 
-		output.rotorPosition = leaderMotor.getRotorPosition().getValue();
-		output.rotorVelocity = leaderMotor.getRotorVelocity().getValue();
+		data.rotorPosition = leaderMotor.getRotorPosition().getValue();
+		data.rotorVelocity = leaderMotor.getRotorVelocity().getValue();
 
-		output.state = state;
-
-		if(telemetryConsumer != null) {
-			telemetryConsumer.accept(output);
-		}
+		data.state = state;
 	}
 
-	public void registerTelemetry(Consumer<ElevatorOutput> telemetryFunction) {
-		telemetryConsumer = telemetryFunction;
-	}
-
-	public ElevatorOutput getOutput() {
-		return output;
+	public ElevatorData getData() {
+		return data;
 	}
 	
 	private double setpointToPosition(double setpoint) {

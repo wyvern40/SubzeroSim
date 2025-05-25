@@ -2,8 +2,6 @@ package frc.robot.subsystems.Intake;
 
 import static edu.wpi.first.units.Units.*;
 
-import java.util.function.Consumer;
-
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.FeedbackConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
@@ -46,7 +44,7 @@ public class Intake extends SubsystemBase {
 		}
 	}
 
-	public class IntakeOutput {
+	public class IntakeData {
 
 		public IntakeState state;
 
@@ -57,7 +55,7 @@ public class Intake extends SubsystemBase {
 		
 	}
 
-	private IntakeOutput output;
+	private IntakeData data;
 	private IntakeState state;
 
 	private final TalonFX pivotMotor = new TalonFX(IntakeConstants.PIVOT_MOTOR_ID);
@@ -69,8 +67,6 @@ public class Intake extends SubsystemBase {
 	private final TalonFXSimState alignMotorSim = alignMotor.getSimState();
 
 	private final MotionMagicVoltage motionMagic = new MotionMagicVoltage(0);
-
-	private Consumer<IntakeOutput> telemetryConsumer;
 
 	private final SingleJointedArmSim armSim = new SingleJointedArmSim(
 		DCMotor.getKrakenX60(1), 
@@ -91,7 +87,7 @@ public class Intake extends SubsystemBase {
 
 		state = IntakeState.STOW;
 
-		this.output = new IntakeOutput();
+		this.data = new IntakeData();
 	}
 
 	void setUpPivotMotor() {
@@ -161,24 +157,16 @@ public class Intake extends SubsystemBase {
 		RoboRioSim.setVInVoltage(BatterySim.calculateDefaultBatteryLoadedVoltage(grabMotor.getStatorCurrent().getValue().in(Amps)));
 		RoboRioSim.setVInVoltage(BatterySim.calculateDefaultBatteryLoadedVoltage(grabMotor.getStatorCurrent().getValue().in(Amps)));
 		
-		output.position = pivotMotor.getPosition().getValue();
-		output.velocity = pivotMotor.getVelocity().getValue();
+		data.position = pivotMotor.getPosition().getValue();
+		data.velocity = pivotMotor.getVelocity().getValue();
 
-		output.targetPosition = Rotations.of(pivotMotor.getClosedLoopReference().getValue());
+		data.targetPosition = Rotations.of(pivotMotor.getClosedLoopReference().getValue());
 
-		output.state = state;
-
-		if(telemetryConsumer != null) {
-			telemetryConsumer.accept(output);
-		}
+		data.state = state;
 	}
 
-	public void registerTelemetry(Consumer<IntakeOutput> telemetryFunction) {
-		telemetryConsumer = telemetryFunction;
-	}
-
-	public IntakeOutput getOutput() {
-		return output;
+	public IntakeData getData() {
+		return data;
 	}
 
 	

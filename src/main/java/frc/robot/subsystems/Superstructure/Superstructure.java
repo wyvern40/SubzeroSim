@@ -65,12 +65,22 @@ public class Superstructure extends SubsystemBase {
 	
 	public void simulationPeriodic() {
 
-		
+		switch(state) {
+			case DRIVE_TO_REEF -> {
+				if(swerve.atTargetPose()) {
+					swapState(SuperstructureState.ALIGN_L4);
+				}
+			}
+
+			default -> {}
+		}
 
 		
 	}
 
 	public void swapState(SuperstructureState state) {
+
+		this.state = state;
 
 		switch(state) {
 			case SCORE_L2, SCORE_L3, SCORE_L4 -> {
