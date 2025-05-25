@@ -13,8 +13,8 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.FieldConstants.BranchSide;
 import frc.robot.subsystems.Arm.Arm;
+import frc.robot.subsystems.Arm.Arm.ArmState;
 import frc.robot.subsystems.Elevator.Elevator;
-import frc.robot.subsystems.Elevator.Elevator.ElevatorState;
 import frc.robot.subsystems.Intake.Intake;
 import frc.robot.subsystems.Superstructure.Superstructure;
 import frc.robot.subsystems.Swerve.SwerveDrive;
@@ -79,10 +79,13 @@ public class RobotController {
 
 	public void updateTelemetry() {
 		telemetry.updateSuperstructureTelemetry();
+		telemetry.updateIntakeTelemetry();
+		telemetry.updateElevatorTelemetry();
+		telemetry.updateArmTelemetry();
 	}
 
 	public Command getAutoCommand() {
-		return elevator.requestState(ElevatorState.L4);
+		return arm.requestState(ArmState.CORAL_ALIGN);
 	}
 
 }

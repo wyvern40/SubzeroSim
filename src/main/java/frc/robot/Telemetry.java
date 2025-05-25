@@ -137,9 +137,14 @@ public class Telemetry {
 
         ArmData data = armSupplier.get();
 
+        //mechanismPoseArray[3] = new Pose3d(
+        //    new Translation3d(0.0, 0.0, mechanismPoseArray[2].getMeasureX().in(Meters)),
+        //    new Rotation3d(data.position.in(Radians), 0.0, 0.0)
+        //);
+
         armState.set(data.state.toString());
         armPosition.set(data.position.in(Degrees));
         armVelocity.set(data.velocity.in(DegreesPerSecond));
-        armTargetPosition.set(data.position.in(Degrees));
+        armTargetPosition.set(data.targetPosition.in(Degrees));
     }
 }

@@ -62,7 +62,7 @@ public class Elevator extends SubsystemBase {
 		
 	}
 
-	private ElevatorData data = new ElevatorData();;
+	private ElevatorData data = new ElevatorData();
 
 	private ElevatorState state;
 
@@ -128,7 +128,7 @@ public class Elevator extends SubsystemBase {
 		elevatorSim.setInput(leaderMotor.getMotorVoltage().getValueAsDouble());
 
 		elevatorSim.update(0.020);
-
+		
 		leaderMotorSim.setRawRotorPosition(Rotations.of(elevatorSim.getPositionMeters() * ElevatorConstants.DISTANCE_TO_ROTATIONS));
 		leaderMotorSim.setRotorVelocity(RotationsPerSecond.of(elevatorSim.getVelocityMetersPerSecond() * ElevatorConstants.DISTANCE_TO_ROTATIONS));
 

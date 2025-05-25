@@ -32,17 +32,18 @@ public class Arm extends SubsystemBase {
 	}
 
     public enum ArmState {
-        STARTING(ArmConstants.START_ANGLE),
-        CORAL_STOW(ArmConstants.CORAL_STOW_ANGLE),
-		ALGAE_STOW(ArmConstants.ALGAE_STOW_ANGLE),
-        CORAL_ALIGN(ArmConstants.CORAL_ALIGN_ANGLE),
-        CORAL_SCORE(ArmConstants.CORAL_SCORE_ANGLE),
-        BARGE_SCORE(ArmConstants.BARGE_SCORE_ANGLE);
+        CORAL_STOW(ArmConstants.CORAL_STOW_ANGLE, 0.0),
+		ALGAE_STOW(ArmConstants.ALGAE_STOW_ANGLE, 0.0),
+        CORAL_HANDOFF(ArmConstants.CORAL_STOW_ANGLE, -1.0),
+        CORAL_ALIGN(ArmConstants.CORAL_ALIGN_ANGLE, 0.0),
+        CORAL_SCORE(ArmConstants.CORAL_SCORE_ANGLE, 0.0);
 
 		private final Angle angle;
+        private final double rollerSpeed;
 
-		ArmState(Angle angle) {
+		ArmState(Angle angle, double rollerSpeed) {
 			this.angle = angle;
+            this.rollerSpeed = rollerSpeed;
 		}
     }
 
@@ -57,9 +58,9 @@ public class Arm extends SubsystemBase {
 
     }
 
-    private ArmData data;
+    private ArmData data = new ArmData();
 
-    private ArmState state;
+    private ArmState state = ArmState.CORAL_STOW;
 
     private final TalonFX pivotMotor = new TalonFX(ArmConstants.PIVOT_MOTOR_ID);
 	private final TalonFX rollerMotor = new TalonFX(ArmConstants.ROLLER_MOTOR_ID);
@@ -68,7 +69,6 @@ public class Arm extends SubsystemBase {
     private final TalonFXSimState rollerMotorSim = rollerMotor.getSimState();
 
     private final MotionMagicVoltage motionMagic = new MotionMagicVoltage(ArmConstants.START_ANGLE);
-
 
     private final SingleJointedArmSim armSim = new SingleJointedArmSim(
         DCMotor.getKrakenX60(1),
@@ -85,10 +85,6 @@ public class Arm extends SubsystemBase {
         
         setUpPivotMotor();
         setUpRollerMotor();
-
-        state = ArmState.STARTING;
-
-        data = new ArmData();
 
     }
 
@@ -163,6 +159,7 @@ public class Arm extends SubsystemBase {
 			    .withSlot(0)
 			    .withPosition(state.angle)
 		    );
+            rollerMotor.set(state.rollerSpeed);
         });
 	}
 }
