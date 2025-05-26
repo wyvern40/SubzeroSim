@@ -53,6 +53,8 @@ public class RobotController {
   	public RobotController() {
     	configureBindings();
 
+		superstructure.initState();
+
 		telemetry.registerSuppliers(
 			() -> intake.getData(),
 			() -> elevator.getData(),
@@ -84,8 +86,14 @@ public class RobotController {
 		telemetry.updateArmTelemetry();
 	}
 
+	public void initSuperstructure() {
+		superstructure.initState();
+	}
+
 	public Command getAutoCommand() {
 		return arm.requestState(ArmState.CORAL_ALIGN);
 	}
+
+	
 
 }

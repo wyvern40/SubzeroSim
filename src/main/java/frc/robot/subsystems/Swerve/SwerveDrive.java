@@ -174,7 +174,8 @@ public class SwerveDrive extends TunerSwerveDrivetrain implements Subsystem {
         return autoDriveCommand = new DriveToPoseCommand(
             nearestPose.transformBy(
                 new Transform2d(SwerveConstants.LINEUP_DISTANCE.unaryMinus(), targetSide.offset.unaryMinus(), Rotation2d.kZero)
-            )
+            ),
+            false
         );
     }
 
@@ -185,7 +186,8 @@ public class SwerveDrive extends TunerSwerveDrivetrain implements Subsystem {
         return autoDriveCommand = new DriveToPoseCommand(
             nearestPose.transformBy(
                 new Transform2d(Meters.of(0.0), targetSide.offset.unaryMinus(), Rotation2d.kZero)
-            )
+            ),
+            true
         );
     }
 
@@ -201,9 +203,10 @@ public class SwerveDrive extends TunerSwerveDrivetrain implements Subsystem {
     }
 
     public Command requestState(SwerveState requestedState) {
-
+    
         //this.state = requestedState;
-        this.getCurrentCommand().cancel();
+        
+        //this.getCurrentCommand().cancel();
 
         switch(requestedState) {
             case PATH_TO_REEF:

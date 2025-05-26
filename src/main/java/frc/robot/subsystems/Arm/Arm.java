@@ -55,7 +55,7 @@ public class Arm extends SubsystemBase {
         public AngularVelocity velocity;
 
         public Angle targetPosition;
-
+        public AngularVelocity targetVelocity;
     }
 
     private ArmData data = new ArmData();
@@ -82,10 +82,8 @@ public class Arm extends SubsystemBase {
     );
 
     private Arm() {
-        
         setUpPivotMotor();
         setUpRollerMotor();
-
     }
 
     private void setUpPivotMotor() {
@@ -144,6 +142,7 @@ public class Arm extends SubsystemBase {
 		data.velocity = pivotMotor.getVelocity().getValue();
 
 		data.targetPosition = Rotations.of(pivotMotor.getClosedLoopReference().getValue());
+        data.targetVelocity = RotationsPerSecond.of(pivotMotor.getClosedLoopReferenceSlope().getValue());
 
 		data.state = state;
 	}

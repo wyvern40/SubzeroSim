@@ -20,14 +20,19 @@ public class DriveToPoseCommand extends Command {
 
     private final ProfiledPIDController thetaController = new ProfiledPIDController(15.0, 0, 0.05, new Constraints(Math.PI * 2.0, Math.PI));
 
-    public DriveToPoseCommand(Pose2d targetPose) {
+    private final boolean limitChassisSpeeds;
+
+    
+    public DriveToPoseCommand(Pose2d targetPose, boolean limitChassisSpeeds) {
+
+        this.limitChassisSpeeds = limitChassisSpeeds;
 
         this.addRequirements(swerve);
         thetaController.enableContinuousInput(-Math.PI, Math.PI);
 
         xController.setTolerance(0.05, 10.0);
         yController.setTolerance(0.05, 10.0);
-        thetaController.setTolerance(Math.PI / 36.0, 10.0);
+        thetaController.setTolerance(Math.PI / 72.0, 10.0);
 
         thetaController.reset(swerve.getState().Pose.getRotation().getRadians()); 
 
@@ -43,14 +48,33 @@ public class DriveToPoseCommand extends Command {
 
         Pose2d currentPose = swerve.getState().Pose;
 
-        ChassisSpeeds speeds = ChassisSpeeds.fromFieldRelativeSpeeds(
-            new ChassisSpeeds(
-                xController.calculate(currentPose.getX()),
-                yController.calculate(currentPose.getY()),
-                thetaController.calculate(currentPose.getRotation().getRadians())
-            ),
-            currentPose.getRotation()
-        );
+        ChassisSpeeds speeds;
+
+        // Limiting the max chassis speeds doesnt play well with normalization but im too tired to make x and y also profiled
+        if(limitChassisSpeeds) {
+
+            speeds = ChassisSpeeds.fromFieldRelativeSpeeds(
+                new ChassisSpeeds(
+                    Math.min(xController.calculate(currentPose.getX()), 1.0),
+                    Math.min(yController.calculate(currentPose.getY()), 1.0),
+                    thetaController.calculate(currentPose.getRotation().getRadians())
+                ),
+                currentPose.getRotation()
+            );
+
+        } else {
+
+            speeds = ChassisSpeeds.fromFieldRelativeSpeeds(
+                new ChassisSpeeds(
+                    xController.calculate(currentPose.getX()),
+                    yController.calculate(currentPose.getY()),
+                    thetaController.calculate(currentPose.getRotation().getRadians())
+                ),
+                currentPose.getRotation()
+            );
+
+        }
+
 
         swerve.setControl(new SwerveRequest.ApplyRobotSpeeds().withSpeeds(speeds));
 

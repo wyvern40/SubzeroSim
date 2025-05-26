@@ -61,12 +61,13 @@ public class Telemetry {
     private final DoublePublisher armPosition = armStateTable.getDoubleTopic("Position").publish();
     private final DoublePublisher armVelocity = armStateTable.getDoubleTopic("Velocity").publish();
     private final DoublePublisher armTargetPosition = armStateTable.getDoubleTopic("Target Position").publish();
+    private final DoublePublisher armTargetVelocity = armStateTable.getDoubleTopic("Target Velocity").publish();
 
     private final NetworkTable simStateTable = inst.getTable("Simulation");
 
     private final StructArrayPublisher<Pose3d> mechanismPoses = simStateTable.getStructArrayTopic("MechanismPoses", Pose3d.struct).publish();
 
-    private Pose3d[] mechanismPoseArray = new Pose3d[3];
+    private Pose3d[] mechanismPoseArray = new Pose3d[4];
 
     private Supplier<IntakeData> intakeSupplier;
     private Supplier<ElevatorData> elevatorSupplier;
@@ -137,14 +138,15 @@ public class Telemetry {
 
         ArmData data = armSupplier.get();
 
-        //mechanismPoseArray[3] = new Pose3d(
-        //    new Translation3d(0.0, 0.0, mechanismPoseArray[2].getMeasureX().in(Meters)),
-        //    new Rotation3d(data.position.in(Radians), 0.0, 0.0)
-        //);
+        mechanismPoseArray[3] = new Pose3d(
+            new Translation3d(0.0, 0.0, mechanismPoseArray[2].getMeasureZ().in(Meters) + 0.22225),
+            new Rotation3d(0.0, -data.position.in(Radians), 0.0)
+        );
 
         armState.set(data.state.toString());
         armPosition.set(data.position.in(Degrees));
         armVelocity.set(data.velocity.in(DegreesPerSecond));
         armTargetPosition.set(data.targetPosition.in(Degrees));
+        armTargetVelocity.set(data.targetVelocity.in(DegreesPerSecond));
     }
 }

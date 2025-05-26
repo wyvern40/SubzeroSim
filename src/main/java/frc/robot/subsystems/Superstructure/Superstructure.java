@@ -63,6 +63,7 @@ public class Superstructure extends SubsystemBase {
 	
 	private Superstructure() {}
 	
+
 	public void simulationPeriodic() {
 
 		switch(state) {
@@ -97,6 +98,10 @@ public class Superstructure extends SubsystemBase {
 		elevator.requestState(state.elevatorState).schedule();
 		arm.requestState(state.armState).schedule();
 
+	}
+	
+	public void initState() {
+		swapState(SuperstructureState.CORAL_STOW);
 	}
 
 	public Command scoreCoral(BranchSide side) {

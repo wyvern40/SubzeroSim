@@ -42,7 +42,7 @@ public class ElevatorConstants  {
 
 	public static final Distance START_POSITION = Inches.of(0.0);
 
-	public static final double CORAL_STOW_SETPOINT = 1.0;
+	public static final double CORAL_STOW_SETPOINT = 1.25;
 
 	public static final double CORAL_L2_SETPOINT = 1.0;
 	public static final double CORAL_L3_SETPOINT = 1.5;
