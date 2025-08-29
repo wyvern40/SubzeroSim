@@ -53,7 +53,6 @@ public class RobotController {
   	public RobotController() {
     	configureBindings();
 
-		//superstructure.initState();
 
 		telemetry.registerSuppliers(
 			() -> intake.getData(),

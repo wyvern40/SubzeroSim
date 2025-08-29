@@ -53,7 +53,7 @@ public class SwerveDrive extends TunerSwerveDrivetrain implements Subsystem {
         STOPPED;
     }
 
-    //private SwerveState state;
+    private SwerveState state;
 
     private BranchSide targetSide;
 
@@ -204,9 +204,7 @@ public class SwerveDrive extends TunerSwerveDrivetrain implements Subsystem {
 
     public Command requestState(SwerveState requestedState) {
     
-        //this.state = requestedState;
-        
-        //this.getCurrentCommand().cancel();
+        this.state = requestedState;
 
         switch(requestedState) {
             case PATH_TO_REEF:

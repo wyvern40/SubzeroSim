@@ -58,5 +58,21 @@
     "edu.wpi.first.math.**.struct.*",
   ],
   "wpilib.selectDefaultSimulateExtension": false,
-  "wpilib.skipSelectSimulateExtension": true
+  "wpilib.skipSelectSimulateExtension": true,
+  "cSpell.words": [
+    "autodetection",
+    "deadband",
+    "Driverstation",
+    "Dstring",
+    "feedforwards",
+    "freefair",
+    "gradlerio",
+    "Holonomic",
+    "lvuser",
+    "Reefscape",
+    "robo",
+    "roborio",
+    "teleop",
+    "wpilib"
+  ]
 }
