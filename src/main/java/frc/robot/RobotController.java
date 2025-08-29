@@ -53,7 +53,7 @@ public class RobotController {
   	public RobotController() {
     	configureBindings();
 
-		superstructure.initState();
+		//superstructure.initState();
 
 		telemetry.registerSuppliers(
 			() -> intake.getData(),
@@ -74,8 +74,8 @@ public class RobotController {
             )
         );
 
-		controller.leftBumper().onTrue(superstructure.scoreCoral(BranchSide.LEFT));
-		controller.rightBumper().onTrue(superstructure.scoreCoral(BranchSide.RIGHT));
+		//controller.leftBumper().onTrue(superstructure.scoreCoral(BranchSide.LEFT));
+		//controller.rightBumper().onTrue(superstructure.scoreCoral(BranchSide.RIGHT));
 		
   	}
 
@@ -87,7 +87,7 @@ public class RobotController {
 	}
 
 	public void initSuperstructure() {
-		superstructure.initState();
+		//superstructure.initState();
 	}
 
 	public Command getAutoCommand() {

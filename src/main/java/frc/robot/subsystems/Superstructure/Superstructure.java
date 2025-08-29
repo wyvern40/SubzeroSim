@@ -25,90 +25,27 @@ public class Superstructure extends SubsystemBase {
 		return instance;
 	}
 
-	public enum SuperstructureState {
-		CORAL_STOW(SwerveState.DRIVER_CONTROL, IntakeState.STOW, ElevatorState.CORAL_STOW, ArmState.CORAL_STOW),
-		CORAL_INTAKE(SwerveState.DRIVER_CONTROL, IntakeState.INTAKE, ElevatorState.CORAL_STOW, ArmState.CORAL_STOW),
-		DRIVE_TO_REEF(SwerveState.PATH_TO_REEF, IntakeState.STOW, ElevatorState.CORAL_STOW, ArmState.CORAL_STOW),
-		ALIGN_L2(SwerveState.ALIGN_TO_REEF, IntakeState.STOW, ElevatorState.L2, ArmState.CORAL_ALIGN),
-		ALIGN_L3(SwerveState.ALIGN_TO_REEF, IntakeState.STOW, ElevatorState.L3, ArmState.CORAL_ALIGN),
-		ALIGN_L4(SwerveState.ALIGN_TO_REEF, IntakeState.STOW, ElevatorState.L4, ArmState.CORAL_ALIGN),
-		SCORE_L2(SwerveState.STOPPED, IntakeState.STOW, ElevatorState.L2, ArmState.CORAL_SCORE),
-		SCORE_L3(SwerveState.STOPPED, IntakeState.STOW, ElevatorState.L3, ArmState.CORAL_SCORE),
-		SCORE_L4(SwerveState.STOPPED, IntakeState.STOW, ElevatorState.L4, ArmState.CORAL_SCORE);
-
-		SwerveState swerveState;
-		IntakeState intakeState;
-		ElevatorState elevatorState;
-		ArmState armState;
-
-		SuperstructureState(SwerveState swerveState, IntakeState intakeState, ElevatorState elevatorState, ArmState armState) {
-			this.swerveState = swerveState;
-			this.intakeState = intakeState;
-			this.elevatorState = elevatorState;
-			this.armState = armState;
-		}
-	}
-
-	private SuperstructureState state = SuperstructureState.CORAL_STOW;
+	private SuperstructureState targetState = SuperstructureState.STOW;
+	private SuperstructureState currentState = SuperstructureState.STOW;
 
 	private GamePiece heldGamePiece = GamePiece.NONE;
 
 	private final SwerveDrive swerve = SwerveDrive.getInstance();
-
 	private final Intake intake = Intake.getInstance();
-
 	private final Elevator elevator = Elevator.getInstance();
-
 	private final Arm arm = Arm.getInstance();
 	
 	private Superstructure() {}
 	
-
-	public void simulationPeriodic() {
-
-		switch(state) {
-			case DRIVE_TO_REEF -> {
-				if(swerve.atTargetPose()) {
-					swapState(SuperstructureState.ALIGN_L4);
-				}
-			}
-
-			default -> {}
-		}
-
+	private void swapState(SuperstructureState state) {
 		
 	}
 
-	public void swapState(SuperstructureState state) {
-
-		this.state = state;
-
-		switch(state) {
-			case SCORE_L2, SCORE_L3, SCORE_L4 -> {
-				heldGamePiece = GamePiece.NONE;
-			}
-			case CORAL_INTAKE -> {
-				heldGamePiece = GamePiece.CORAL;
-			}
-			default -> {}
-		}
-
-		swerve.requestState(state.swerveState).schedule();
-		intake.requestState(state.intakeState).schedule();
-		elevator.requestState(state.elevatorState).schedule();
-		arm.requestState(state.armState).schedule();
-
-	}
-	
-	public void initState() {
-		swapState(SuperstructureState.CORAL_STOW);
-	}
-
-	public Command scoreCoral(BranchSide side) {
+	public Command requestState(SuperstructureState state) {
 		return this.runOnce(() -> {
-			swerve.setTargetSide(side);
-			if(state == SuperstructureState.CORAL_STOW && heldGamePiece == GamePiece.NONE) {
-				swapState(SuperstructureState.DRIVE_TO_REEF);
+			if(currentState.getConnectedStates().contains(state)) {
+				targetState = state;
+				swapState(state);
 			}
 		});
 	}
