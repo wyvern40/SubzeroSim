@@ -3,8 +3,9 @@
 package frc.robot.util;
 
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.PubSubOption;
 import edu.wpi.first.networktables.DoubleSubscriber;
-
+import edu.wpi.first.networktables.DoubleTopic;
 import frc.robot.Constants;
 
 public class LoggedTunableNumber {
@@ -35,7 +36,9 @@ public class LoggedTunableNumber {
             initialized = true;
 
             if(Constants.tuningMode) {
-                subscriber = NetworkTableInstance.getDefault().getDoubleTopic(key).subscribe(defaultValue);
+                DoubleTopic topic = NetworkTableInstance.getDefault().getTable("/Tuning").getDoubleTopic(key);
+                topic.publish();
+                subscriber = topic.subscribe(defaultValue);
             }
         }
     }

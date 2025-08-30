@@ -38,8 +38,6 @@ public class RobotController {
 	
 	private final CommandXboxController controller = new CommandXboxController(0);
 
-	private final Superstructure superstructure = Superstructure.getInstance();
-
 	private final SwerveDrive swerve = SwerveDrive.getInstance();
 
 	private final Intake intake = Intake.getInstance();

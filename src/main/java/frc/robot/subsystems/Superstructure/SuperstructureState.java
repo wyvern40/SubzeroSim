@@ -6,7 +6,6 @@ import frc.robot.subsystems.Elevator.Elevator.ElevatorState;
 import java.util.HashMap;
 import java.util.List;
 
-import edu.wpi.first.wpilibj.RobotState;
 import frc.robot.subsystems.Arm.Arm.ArmState;
 import frc.robot.subsystems.Intake.Intake.IntakeState;
 

@@ -21,6 +21,7 @@ import edu.wpi.first.wpilibj.simulation.RoboRioSim;
 import edu.wpi.first.wpilibj.simulation.ElevatorSim;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.util.LoggedTunableNumber;
 
 public class Elevator extends SubsystemBase {
     
@@ -86,7 +87,6 @@ public class Elevator extends SubsystemBase {
 
 	private Elevator() {
 		setUpMotors();
-
 		state = ElevatorState.CORAL_STOW;
 	}
 

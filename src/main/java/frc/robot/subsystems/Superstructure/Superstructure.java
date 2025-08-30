@@ -1,6 +1,5 @@
 package frc.robot.subsystems.Superstructure;
 
-import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.FieldConstants.GamePiece;
@@ -8,7 +7,6 @@ import frc.robot.subsystems.Arm.Arm;
 import frc.robot.subsystems.Elevator.Elevator;
 import frc.robot.subsystems.Intake.Intake;
 import frc.robot.subsystems.Swerve.SwerveDrive;
-import frc.robot.util.LoggedTunableNumber;
 
 public class Superstructure extends SubsystemBase {
     
