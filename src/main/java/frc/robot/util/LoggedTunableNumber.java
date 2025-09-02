@@ -3,12 +3,12 @@
 package frc.robot.util;
 
 import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.networktables.PubSubOption;
 import edu.wpi.first.networktables.DoubleSubscriber;
 import edu.wpi.first.networktables.DoubleTopic;
 import frc.robot.Constants;
 
 public class LoggedTunableNumber {
+    
     private DoubleSubscriber subscriber;
 
     private final String key;
@@ -43,6 +43,7 @@ public class LoggedTunableNumber {
         }
     }
     
+    @SuppressWarnings("unused")
     public double get() {
         if(Constants.tuningMode && initialized) {
             value = subscriber.get();
@@ -50,6 +51,7 @@ public class LoggedTunableNumber {
         return value;
     }
 
+    @SuppressWarnings("unused")
     public boolean hasChanged() {
         if(Constants.tuningMode && initialized) {
             value = subscriber.get();

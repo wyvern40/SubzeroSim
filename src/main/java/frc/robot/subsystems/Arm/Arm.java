@@ -4,9 +4,11 @@ import static edu.wpi.first.units.Units.*;
 
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.FeedbackConfigs;
+import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.sim.TalonFXSimState;
 
 import edu.wpi.first.math.system.plant.DCMotor;
@@ -20,7 +22,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Arm extends SubsystemBase {
-
+    
     private static Arm instance;
 
     	public static synchronized Arm getInstance() {
@@ -32,18 +34,14 @@ public class Arm extends SubsystemBase {
 	}
 
     public enum ArmState {
-        CORAL_STOW(ArmConstants.CORAL_STOW_ANGLE, 0.0),
-		ALGAE_STOW(ArmConstants.ALGAE_STOW_ANGLE, 0.0),
-        CORAL_HANDOFF(ArmConstants.CORAL_STOW_ANGLE, -1.0),
-        CORAL_ALIGN(ArmConstants.CORAL_ALIGN_ANGLE, 0.0),
-        CORAL_SCORE(ArmConstants.CORAL_SCORE_ANGLE, 0.0);
+        CORAL_STOW(ArmConstants.coralStowSetpoint),
+        CORAL_ALIGN(ArmConstants.coralAlignSetpoint),
+        CORAL_SCORE(ArmConstants.coralScoreSetpoint);
 
 		private final Angle angle;
-        private final double rollerSpeed;
 
-		ArmState(Angle angle, double rollerSpeed) {
+		ArmState(Angle angle) {
 			this.angle = angle;
-            this.rollerSpeed = rollerSpeed;
 		}
     }
 
@@ -56,87 +54,95 @@ public class Arm extends SubsystemBase {
 
         public Angle targetPosition;
         public AngularVelocity targetVelocity;
+
     }
 
     private ArmData data = new ArmData();
 
     private ArmState state = ArmState.CORAL_STOW;
 
-    private final TalonFX pivotMotor = new TalonFX(ArmConstants.PIVOT_MOTOR_ID);
-	private final TalonFX rollerMotor = new TalonFX(ArmConstants.ROLLER_MOTOR_ID);
+    private final TalonFX pivotMotor = new TalonFX(ArmConstants.motorID);
+	//private final TalonFX rollerMotor = new TalonFX(ArmConstants.ROLLER_MOTOR_ID);
 
     private final TalonFXSimState pivotMotorSim = pivotMotor.getSimState();
-    private final TalonFXSimState rollerMotorSim = rollerMotor.getSimState();
+    //private final TalonFXSimState rollerMotorSim = rollerMotor.getSimState();
 
-    private final MotionMagicVoltage motionMagic = new MotionMagicVoltage(ArmConstants.START_ANGLE);
+    private final MotionMagicVoltage motionMagic = new MotionMagicVoltage(ArmConstants.startingAngle);
 
     private final SingleJointedArmSim armSim = new SingleJointedArmSim(
         DCMotor.getKrakenX60(1),
-        ArmConstants.GEAR_RATIO,
-        ArmConstants.MOI,
-        ArmConstants.LENGTH.in(Meters),
-        ArmConstants.MIN_ANGLE.in(Radians),
-        ArmConstants.MAX_ANGLE.in(Radians),
+        ArmConstants.gearRatio,
+        ArmConstants.moi,
+        ArmConstants.length.in(Meters),
+        ArmConstants.minAngle.in(Radians),
+        ArmConstants.maxAngle.in(Radians),
         true,
-        ArmConstants.START_ANGLE.in(Radians)
+        ArmConstants.startingAngle.in(Radians)
     );
 
     private Arm() {
         setUpPivotMotor();
-        setUpRollerMotor();
+    }
+
+    private void applyPIDConfigs() {
+        var talonFXConfigs = new TalonFXConfiguration();
+
+        talonFXConfigs.Slot0 = new Slot0Configs()
+            .withKP(ArmConstants.kP.get())
+            .withKS(ArmConstants.kS.get())
+            .withKG(ArmConstants.kG.get())
+            .withKV(ArmConstants.kV.get())
+            .withKV(ArmConstants.kA.get())
+            .withGravityType(GravityTypeValue.Arm_Cosine);
+
+        talonFXConfigs.MotionMagic.MotionMagicCruiseVelocity = ArmConstants.profileMaxVelocity.get();
+		talonFXConfigs.MotionMagic.MotionMagicAcceleration = ArmConstants.profileMaxAcceleration.get();
+
+        pivotMotor.getConfigurator().apply(talonFXConfigs);
     }
 
     private void setUpPivotMotor() {
-        
-        var talonFXConfigs = new TalonFXConfiguration();
 
-		talonFXConfigs.Slot0 = ArmConstants.PIVOT_PID_CONFIGS;
-
-		talonFXConfigs.MotionMagic.MotionMagicCruiseVelocity = ArmConstants.MM_VELOCITY;
-		talonFXConfigs.MotionMagic.MotionMagicAcceleration = ArmConstants.MM_ACCELERATION;
+        applyPIDConfigs();
 
         var limitConfigs = new CurrentLimitsConfigs();
 
-        limitConfigs.StatorCurrentLimit = ArmConstants.PIVOT_STATOR_CURRENT_LIMIT;
+        limitConfigs.StatorCurrentLimit = ArmConstants.statorCurrentLimit;
 		limitConfigs.StatorCurrentLimitEnable = true;
 
-		limitConfigs.SupplyCurrentLimit = ArmConstants.PIVOT_SUPPLY_CURRENT_LIMIT;
+		limitConfigs.SupplyCurrentLimit = ArmConstants.supplyCurrentLimit;
 		limitConfigs.SupplyCurrentLimitEnable = true;
 
-        var feedbackConfigs = new FeedbackConfigs().withSensorToMechanismRatio(ArmConstants.GEAR_RATIO);
+        var feedbackConfigs = new FeedbackConfigs().withSensorToMechanismRatio(ArmConstants.gearRatio);
 
-        pivotMotor.getConfigurator().apply(talonFXConfigs);
 		pivotMotor.getConfigurator().apply(limitConfigs);
 		pivotMotor.getConfigurator().apply(feedbackConfigs);
     }
 
-    private void setUpRollerMotor() {
-
-        var limitConfigs = new CurrentLimitsConfigs();
-
-        limitConfigs.StatorCurrentLimit = ArmConstants.ROLLER_STATOR_CURRENT_LIMIT;
-		limitConfigs.StatorCurrentLimitEnable = true;
-
-		limitConfigs.SupplyCurrentLimit = ArmConstants.ROLLER_SUPPLY_CURRENT_LIMIT;
-		limitConfigs.SupplyCurrentLimitEnable = true;
-
-        pivotMotor.getConfigurator().apply(limitConfigs);
-    }
-
     public void simulationPeriodic() {
 		
+        if(
+            ArmConstants.kP.hasChanged() ||
+            ArmConstants.kS.hasChanged() ||
+            ArmConstants.kG.hasChanged() ||
+            ArmConstants.kV.hasChanged() ||
+            ArmConstants.kA.hasChanged() ||
+            ArmConstants.profileMaxVelocity.hasChanged() ||
+            ArmConstants.profileMaxAcceleration.hasChanged()
+        ) {
+            applyPIDConfigs();
+        }
+
 		pivotMotorSim.setSupplyVoltage(RobotController.getBatteryVoltage());
-		rollerMotorSim.setSupplyVoltage(RobotController.getBatteryVoltage());
 
 		armSim.setInput(pivotMotor.getMotorVoltage().getValueAsDouble());
 
 		armSim.update(0.020);
 
-		pivotMotorSim.setRawRotorPosition(Radians.of(armSim.getAngleRads() * ArmConstants.GEAR_RATIO));
-		pivotMotorSim.setRotorVelocity(RadiansPerSecond.of(armSim.getVelocityRadPerSec() * ArmConstants.GEAR_RATIO));
+		pivotMotorSim.setRawRotorPosition(Radians.of(armSim.getAngleRads() * ArmConstants.gearRatio));
+		pivotMotorSim.setRotorVelocity(RadiansPerSecond.of(armSim.getVelocityRadPerSec() * ArmConstants.gearRatio));
 
 		RoboRioSim.setVInVoltage(BatterySim.calculateDefaultBatteryLoadedVoltage(armSim.getCurrentDrawAmps()));
-		RoboRioSim.setVInVoltage(BatterySim.calculateDefaultBatteryLoadedVoltage(rollerMotor.getStatorCurrent().getValue().in(Amps)));
 		
         data.position = pivotMotor.getPosition().getValue();
 		data.velocity = pivotMotor.getVelocity().getValue();
@@ -158,7 +164,6 @@ public class Arm extends SubsystemBase {
 			    .withSlot(0)
 			    .withPosition(state.angle)
 		    );
-            rollerMotor.set(state.rollerSpeed);
         });
 	}
 }
