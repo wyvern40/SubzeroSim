@@ -13,10 +13,12 @@ public class ArmConstants {
 
 	public static final Angle startingAngle = Degrees.of(0.0);
 
+    public static final Angle setpointTolerance = Degrees.of(2.0);
+
 	public static final Angle coralStowSetpoint = Degrees.of(-90.0);
     public static final Angle coralAlignSetpoint = Degrees.of(45.0);
     public static final Angle coralScoreSetpoint = Degrees.of(30.0);
-
+    
 	public static final double statorCurrentLimit = 120.0;
 	public static final double supplyCurrentLimit = 40.0;
 

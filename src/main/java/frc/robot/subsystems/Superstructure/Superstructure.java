@@ -2,7 +2,6 @@ package frc.robot.subsystems.Superstructure;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.FieldConstants.GamePiece;
 import frc.robot.subsystems.Arm.Arm;
 import frc.robot.subsystems.Elevator.Elevator;
 import frc.robot.subsystems.Intake.Intake;
@@ -22,7 +21,9 @@ public class Superstructure extends SubsystemBase {
 	
 	private SuperstructureState currentState = SuperstructureState.STOW;
 
-	private GamePiece heldGamePiece = GamePiece.NONE;
+	private SuperstructureState targetReefState = SuperstructureState.L4_ALIGN;
+
+	//private GamePiece heldGamePiece = GamePiece.NONE;
 
 	private final SwerveDrive swerve = SwerveDrive.getInstance();
 	private final Intake intake = Intake.getInstance();
@@ -47,4 +48,16 @@ public class Superstructure extends SubsystemBase {
 		});
 	}
 
+	public void simulationPeriodic() {
+
+		switch(currentState) {
+			case DRIVE_TO_REEF -> {
+				if(arm.atSetpoint()) {
+					requestState(targetReefState);
+				}
+			}
+			default -> {}
+		}
+
+	}
 }

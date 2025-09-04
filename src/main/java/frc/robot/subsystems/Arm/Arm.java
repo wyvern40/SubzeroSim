@@ -11,6 +11,7 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.sim.TalonFXSimState;
 
+import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -20,12 +21,13 @@ import edu.wpi.first.wpilibj.simulation.RoboRioSim;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import lombok.Getter;
 
 public class Arm extends SubsystemBase {
     
     private static Arm instance;
 
-    	public static synchronized Arm getInstance() {
+    public static synchronized Arm getInstance() {
 		if (instance == null) {
 			instance = new Arm();
 		}
@@ -45,27 +47,31 @@ public class Arm extends SubsystemBase {
 		}
     }
 
+    @Getter
     public class ArmData {
 
+        @Logged(name = "State")
         public ArmState state;
 
+        @Logged(name = "Position")
         public Angle position;
+        @Logged(name = "Velocity")
         public AngularVelocity velocity;
 
+        @Logged(name = "Target Position")
         public Angle targetPosition;
+        @Logged(name = "Target Velocity")
         public AngularVelocity targetVelocity;
 
     }
 
-    private ArmData data = new ArmData();
+    @Logged(name = "Data")
+    private final ArmData data = new ArmData();
 
     private ArmState state = ArmState.CORAL_STOW;
 
     private final TalonFX pivotMotor = new TalonFX(ArmConstants.motorID);
-	//private final TalonFX rollerMotor = new TalonFX(ArmConstants.ROLLER_MOTOR_ID);
-
     private final TalonFXSimState pivotMotorSim = pivotMotor.getSimState();
-    //private final TalonFXSimState rollerMotorSim = rollerMotor.getSimState();
 
     private final MotionMagicVoltage motionMagic = new MotionMagicVoltage(ArmConstants.startingAngle);
 
@@ -80,8 +86,12 @@ public class Arm extends SubsystemBase {
         ArmConstants.startingAngle.in(Radians)
     );
 
+    public boolean atSetpoint() {
+        return data.position.minus(state.angle).abs(Rotation) < ArmConstants.setpointTolerance.in(Degrees);
+    }
+
     private Arm() {
-        setUpPivotMotor();
+        setUpMotors();
     }
 
     private void applyPIDConfigs() {
@@ -101,7 +111,7 @@ public class Arm extends SubsystemBase {
         pivotMotor.getConfigurator().apply(talonFXConfigs);
     }
 
-    private void setUpPivotMotor() {
+    private void setUpMotors() {
 
         applyPIDConfigs();
 
@@ -117,6 +127,7 @@ public class Arm extends SubsystemBase {
 
 		pivotMotor.getConfigurator().apply(limitConfigs);
 		pivotMotor.getConfigurator().apply(feedbackConfigs);
+
     }
 
     public void simulationPeriodic() {
@@ -151,10 +162,6 @@ public class Arm extends SubsystemBase {
         data.targetVelocity = RotationsPerSecond.of(pivotMotor.getClosedLoopReferenceSlope().getValue());
 
 		data.state = state;
-	}
-
-    public ArmData getData() {
-		return data;
 	}
 
     public Command requestState(ArmState state) {
