@@ -15,6 +15,7 @@ import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.util.DriveFeedforwards;
 
+import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -53,6 +54,7 @@ public class SwerveDrive extends TunerSwerveDrivetrain implements Subsystem {
         STOPPED;
     }
 
+    @Logged(name = "State")
     private SwerveState state;
 
     private BranchSide targetSide;
@@ -202,21 +204,26 @@ public class SwerveDrive extends TunerSwerveDrivetrain implements Subsystem {
         this.targetSide = side;
     }
 
-    public Command requestState(SwerveState requestedState) {
+    public Command swapState(SwerveState requestedState) {
     
         this.state = requestedState;
 
         switch(requestedState) {
-            case PATH_TO_REEF:
+            case PATH_TO_REEF -> {
                 return driveToReef();
-            case ALIGN_TO_REEF:
+            }
+            case ALIGN_TO_REEF -> {
                 return alignToReef();
-            case DRIVER_CONTROL:
+            }
+            case DRIVER_CONTROL -> {
                 return this.getDefaultCommand();
-            case STOPPED:
+            }
+            case STOPPED -> {
                 return Commands.idle(this);
-            default:
+            }
+            default -> {
                 return Commands.none();
+            }
         }
     }
 }

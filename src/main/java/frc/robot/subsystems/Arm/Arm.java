@@ -86,10 +86,6 @@ public class Arm extends SubsystemBase {
         ArmConstants.startingAngle.in(Radians)
     );
 
-    public boolean atSetpoint() {
-        return data.position.minus(state.angle).abs(Rotation) < ArmConstants.setpointTolerance.in(Degrees);
-    }
-
     private Arm() {
         setUpMotors();
     }
@@ -132,6 +128,11 @@ public class Arm extends SubsystemBase {
 
     public void simulationPeriodic() {
 		
+        pivotMotor.setControl(motionMagic
+			.withSlot(0)
+			.withPosition(state.angle)
+        );
+        
         if(
             ArmConstants.kP.hasChanged() ||
             ArmConstants.kS.hasChanged() ||
@@ -164,13 +165,11 @@ public class Arm extends SubsystemBase {
 		data.state = state;
 	}
 
-    public Command requestState(ArmState state) {
-		this.state = state;
-		return this.run(() -> {
-            pivotMotor.setControl(motionMagic
-			    .withSlot(0)
-			    .withPosition(state.angle)
-		    );
-        });
+    public boolean atSetpoint() {
+        return data.position.minus(state.angle).abs(Degrees) < ArmConstants.setpointTolerance.in(Degrees);
+    }
+
+    public Command swapState(ArmState state) {
+		return this.run(() -> this.state = state);
 	}
 }

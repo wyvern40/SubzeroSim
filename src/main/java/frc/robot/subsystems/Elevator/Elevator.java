@@ -97,10 +97,6 @@ public class Elevator extends SubsystemBase {
 		ElevatorConstants.startingPosition.in(Meters)
 	);
 
-	public boolean atSetpoint() {
-        return data.position.minus(state.setpoint).abs(Meters) < ElevatorConstants.setpointTolerance.in(Meters);
-    }
-
 	private Elevator() {
 		setUpMotors();
 		state = ElevatorState.CORAL_STOW;
@@ -146,6 +142,24 @@ public class Elevator extends SubsystemBase {
 
 	public void simulationPeriodic() {
 		
+		leaderMotor.setControl(motionMagic
+			.withSlot(0)
+			.withPosition(state.setpoint.in(Meters) * ElevatorConstants.distanceToRotations)
+		);
+
+		if(
+            ElevatorConstants.kP.hasChanged() ||
+            ElevatorConstants.kS.hasChanged() ||
+            ElevatorConstants.kG.hasChanged() ||
+            ElevatorConstants.kV.hasChanged() ||
+            ElevatorConstants.kA.hasChanged() ||
+            ElevatorConstants.profileMaxVelocity.hasChanged() ||
+            ElevatorConstants.profileMaxAcceleration.hasChanged()
+        ) {
+            applyPIDConfigs();
+        }
+
+
 		leaderMotorSim.setSupplyVoltage(RobotController.getBatteryVoltage());
 
 		elevatorSim.setInput(leaderMotor.getMotorVoltage().getValueAsDouble());
@@ -169,18 +183,12 @@ public class Elevator extends SubsystemBase {
 		data.state = state;
 	}
 
-	public ElevatorData getData() {
-		return data;
-	}
+	public boolean atSetpoint() {
+        return data.position.minus(state.setpoint).abs(Meters) < ElevatorConstants.setpointTolerance.in(Meters);
+    }
 
-	public Command requestState(ElevatorState state) {
-		this.state = state;
-		return this.run(() -> {
-			leaderMotor.setControl(motionMagic
-				.withSlot(0)
-				.withPosition(state.setpoint.in(Meters) * ElevatorConstants.distanceToRotations)
-			);
-		});
+	public Command swapState(ElevatorState state) {
+		return this.runOnce(() -> this.state = state);
 	}
 
 }

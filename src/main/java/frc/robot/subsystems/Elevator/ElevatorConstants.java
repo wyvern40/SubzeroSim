@@ -15,7 +15,7 @@ public class ElevatorConstants  {
 
 	public static final Distance setpointTolerance = Inches.of(0.0);
 
-	public static final Distance coralStowSetpoint = Inches.of(0.5);
+	public static final Distance coralStowSetpoint = Inches.of(0.0);
 
 	public static final Distance coralL2Setpoint = Inches.of(0.0);
 	public static final Distance coralL3Setpoint = Inches.of(0.0);
@@ -26,6 +26,14 @@ public class ElevatorConstants  {
 
 	public static final double statorCurrentLimit = 120.0;
 	public static final double supplyCurrentLimit = 40.0;
+
+	public static final double gearRatio = 4.0;
+
+	public static final Mass mass = Pounds.of(10.95);
+	public static final Distance spoolRadius = Inches.of(0.75); 
+
+	public static final double rotationsToDistance = (2.0 * Math.PI * spoolRadius.in(Meters)) / gearRatio;
+	public static final double distanceToRotations = gearRatio / ((2.0 * Math.PI * spoolRadius.in(Meters)));
 
 	public static final LoggedTunableNumber profileMaxVelocity = 
         new LoggedTunableNumber("/Elevator/Profile/Max Velocity", 3.0);
@@ -48,15 +56,4 @@ public class ElevatorConstants  {
     public static final LoggedTunableNumber kA = 
         new LoggedTunableNumber("/Elevator/PID/kA", 0.15);
 	
-	public static final double gearRatio = 4.0;
-
-	public static final Mass mass = Pounds.of(10.95);
-	public static final Distance spoolRadius = Inches.of(0.75); 
-
-	public static final double rotationsToDistance = (2.0 * Math.PI * spoolRadius.in(Meters)) / gearRatio;
-	public static final double distanceToRotations = gearRatio / ((2.0 * Math.PI * spoolRadius.in(Meters)));
-
-	// Max height the Carriage can travel to without moving the first stage
-	// public static final Distance maxCarriageDistance = Inches.of(26);
-
 }

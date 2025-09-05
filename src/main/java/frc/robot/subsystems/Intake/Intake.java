@@ -4,11 +4,14 @@ import static edu.wpi.first.units.Units.*;
 
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.FeedbackConfigs;
+import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.sim.TalonFXSimState;
 
+import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -18,6 +21,7 @@ import edu.wpi.first.wpilibj.simulation.RoboRioSim;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import lombok.Getter;
 
 public class Intake extends SubsystemBase {
     
@@ -32,8 +36,8 @@ public class Intake extends SubsystemBase {
 	}
 
 	public enum IntakeState {
-		INTAKE(IntakeConstants.INTAKE_DOWN_ANGLE, true),
-		STOW(IntakeConstants.INTAKE_UP_ANGLE, false);
+		INTAKE(IntakeConstants.pivotIntakeSetpoint, true),
+		STOW(IntakeConstants.pivotStowSetpoint, false);
 
 		private final Angle angle;
 		private final boolean runRollers;
@@ -44,23 +48,30 @@ public class Intake extends SubsystemBase {
 		}
 	}
 
+	@Getter
 	public class IntakeData {
 
+		@Logged(name = "State")
 		public IntakeState state;
 
+		@Logged(name = "Position")
 		public Angle position;
+		@Logged(name = "Velocity")
 		public AngularVelocity velocity;
 
+		@Logged(name = "TargetPosition")
 		public Angle targetPosition;
 		
 	}
 
+	@Logged(name = "Data")
 	private IntakeData data;
+
 	private IntakeState state;
 
-	private final TalonFX pivotMotor = new TalonFX(IntakeConstants.PIVOT_MOTOR_ID);
-	private final TalonFX grabMotor = new TalonFX(IntakeConstants.GRAB_MOTOR_ID);
-	private final TalonFX alignMotor = new TalonFX(IntakeConstants.ALIGN_MOTOR_ID);
+	private final TalonFX pivotMotor = new TalonFX(IntakeConstants.pivotMotorID);
+	private final TalonFX grabMotor = new TalonFX(IntakeConstants.grabMotorID);
+	private final TalonFX alignMotor = new TalonFX(IntakeConstants.alignMotorID);
 
 	private final TalonFXSimState pivotMotorSim = pivotMotor.getSimState();
 	private final TalonFXSimState grabMotorSim = grabMotor.getSimState();
@@ -70,13 +81,13 @@ public class Intake extends SubsystemBase {
 
 	private final SingleJointedArmSim armSim = new SingleJointedArmSim(
 		DCMotor.getKrakenX60(1), 
-		IntakeConstants.PIVOT_GEAR_RATIO,
-		IntakeConstants.MOI,
-		IntakeConstants.LENGTH.in(Meters),
-		IntakeConstants.MIN_ANGLE.in(Radians),
-		IntakeConstants.MAX_ANGLE.in(Radians),
+		IntakeConstants.pivotGearRatio,
+		IntakeConstants.moi,
+		IntakeConstants.length.in(Meters),
+		IntakeConstants.minAngle.in(Radians),
+		IntakeConstants.maxAngle.in(Radians),
 		true,
-		IntakeConstants.START_ANGLE.in(Radians)
+		IntakeConstants.startingAngle.in(Radians)
 	);
 
 	private Intake() {
@@ -88,40 +99,54 @@ public class Intake extends SubsystemBase {
 		state = IntakeState.STOW;
 
 		this.data = new IntakeData();
+
 	}
+
+	private void applyPivotPIDConfigs() {
+
+        var talonFXConfigs = new TalonFXConfiguration();
+
+        talonFXConfigs.Slot0 = new Slot0Configs()
+            .withKP(IntakeConstants.kP.get())
+            .withKS(IntakeConstants.kS.get())
+            .withKG(IntakeConstants.kG.get())
+            .withKV(IntakeConstants.kV.get())
+            .withKV(IntakeConstants.kA.get())
+            .withGravityType(GravityTypeValue.Arm_Cosine);
+
+        talonFXConfigs.MotionMagic.MotionMagicCruiseVelocity = IntakeConstants.profileMaxVelocity.get();
+		talonFXConfigs.MotionMagic.MotionMagicAcceleration = IntakeConstants.profileMaxAcceleration.get();
+
+        pivotMotor.getConfigurator().apply(talonFXConfigs);
+    }
 
 	void setUpPivotMotor() {
 
-		var talonFXConfigs = new TalonFXConfiguration();
-
-		talonFXConfigs.Slot0 = IntakeConstants.PIVOT_PID_CONFIGS;
-
-		talonFXConfigs.MotionMagic.MotionMagicCruiseVelocity = IntakeConstants.PIVOT_MM_VELOCITY;
-		talonFXConfigs.MotionMagic.MotionMagicAcceleration = IntakeConstants.PIVOT_MM_ACCELERATION;
+		applyPivotPIDConfigs();
 
 		var limitConfigs = new CurrentLimitsConfigs();
 
-		limitConfigs.StatorCurrentLimit = IntakeConstants.PIVOT_STATOR_CURRENT_LIMIT;
+		limitConfigs.StatorCurrentLimit = IntakeConstants.pivotStatorCurrentLimit;
 		limitConfigs.StatorCurrentLimitEnable = true;
 
-		limitConfigs.SupplyCurrentLimit = IntakeConstants.PIVOT_SUPPLY_CURRENT_LIMIT;
+		limitConfigs.SupplyCurrentLimit = IntakeConstants.pivotSupplyCurrentLimit;
 		limitConfigs.SupplyCurrentLimitEnable = true;
 
-		var feedbackConfigs = new FeedbackConfigs().withSensorToMechanismRatio(IntakeConstants.PIVOT_GEAR_RATIO);
+		var feedbackConfigs = new FeedbackConfigs().withSensorToMechanismRatio(IntakeConstants.pivotGearRatio);
 
-		pivotMotor.getConfigurator().apply(talonFXConfigs);
 		pivotMotor.getConfigurator().apply(limitConfigs);
 		pivotMotor.getConfigurator().apply(feedbackConfigs);
+
 	}
 
 	void setUpGrabMotor() {
 
 		var limitConfigs = new CurrentLimitsConfigs();
 
-		limitConfigs.StatorCurrentLimit = IntakeConstants.GRAB_STATOR_CURRENT_LIMIT;
+		limitConfigs.StatorCurrentLimit = IntakeConstants.grabStatorCurrentLimit;
 		limitConfigs.StatorCurrentLimitEnable = true;
 
-		limitConfigs.SupplyCurrentLimit = IntakeConstants.GRAB_SUPPLY_CURRENT_LIMIT;
+		limitConfigs.SupplyCurrentLimit = IntakeConstants.grabSupplyCurrentLmit;
 		limitConfigs.SupplyCurrentLimitEnable = true;
 
 		grabMotor.getConfigurator().apply(limitConfigs);
@@ -131,16 +156,41 @@ public class Intake extends SubsystemBase {
 
 		var limitConfigs = new CurrentLimitsConfigs();
 
-		limitConfigs.StatorCurrentLimit = IntakeConstants.ALIGN_STATOR_CURRENT_LIMIT;
+		limitConfigs.StatorCurrentLimit = IntakeConstants.alignStatorCurrentLimit;
 		limitConfigs.StatorCurrentLimitEnable = true;
 
-		limitConfigs.SupplyCurrentLimit = IntakeConstants.ALIGN_SUPPLY_CURRENT_LIMIT;
+		limitConfigs.SupplyCurrentLimit = IntakeConstants.alignSupplyCurrentLimit;
 		limitConfigs.SupplyCurrentLimitEnable = true;
 
 		alignMotor.getConfigurator().apply(limitConfigs);
 	}
 
 	public void simulationPeriodic() {
+		
+		pivotMotor.setControl(motionMagic
+			.withSlot(0)
+			.withPosition(state.angle)
+		);
+
+		if(state.runRollers) {
+			grabMotor.set(1.0);
+			alignMotor.set(1.0);
+		} else {
+			grabMotor.set(0.0);
+			alignMotor.set(0.0);
+		}
+
+		if(
+            IntakeConstants.kP.hasChanged() ||
+            IntakeConstants.kS.hasChanged() ||
+            IntakeConstants.kG.hasChanged() ||
+            IntakeConstants.kV.hasChanged() ||
+            IntakeConstants.kA.hasChanged() ||
+            IntakeConstants.profileMaxVelocity.hasChanged() ||
+            IntakeConstants.profileMaxAcceleration.hasChanged()
+        ) {
+            applyPivotPIDConfigs();
+        }
 
 		pivotMotorSim.setSupplyVoltage(RobotController.getBatteryVoltage());
 		grabMotorSim.setSupplyVoltage(RobotController.getBatteryVoltage());
@@ -150,8 +200,8 @@ public class Intake extends SubsystemBase {
 
 		armSim.update(0.020);
 
-		pivotMotorSim.setRawRotorPosition(Radians.of(armSim.getAngleRads() * IntakeConstants.PIVOT_GEAR_RATIO));
-		pivotMotorSim.setRotorVelocity(RadiansPerSecond.of(armSim.getVelocityRadPerSec() * IntakeConstants.PIVOT_GEAR_RATIO));
+		pivotMotorSim.setRawRotorPosition(Radians.of(armSim.getAngleRads() * IntakeConstants.pivotGearRatio));
+		pivotMotorSim.setRotorVelocity(RadiansPerSecond.of(armSim.getVelocityRadPerSec() * IntakeConstants.pivotGearRatio));
 
 		RoboRioSim.setVInVoltage(BatterySim.calculateDefaultBatteryLoadedVoltage(armSim.getCurrentDrawAmps()));
 		RoboRioSim.setVInVoltage(BatterySim.calculateDefaultBatteryLoadedVoltage(grabMotor.getStatorCurrent().getValue().in(Amps)));
@@ -165,39 +215,12 @@ public class Intake extends SubsystemBase {
 		data.state = state;
 	}
 
-	public IntakeData getData() {
-		return data;
+	public boolean atSetpoint() {
+		return data.position.minus(state.angle).abs(Degrees) < IntakeConstants.setpointTolerance.in(Degrees);
 	}
 
-	
-	private void setPosition(Angle position) {
-		pivotMotor.setControl(motionMagic
-			.withSlot(0)
-			.withPosition(position)
-		);
+	public Command swapState(IntakeState state) {
+		return this.runOnce(() -> this.state = state);
 	}
-
-	private void runRollers() {
-		grabMotor.set(1.0);
-		alignMotor.set(1.0);
-	}
-
-	private void stopRollers() {
-		grabMotor.set(0.0);
-		alignMotor.set(0.0);
-	}
-
-	public Command requestState(IntakeState state) {
-		this.state = state;
-		if(state.runRollers) {
-			return this.runEnd(
-				() -> {setPosition(state.angle); runRollers();},
-				() -> {stopRollers();}
-			);
-		} else {
-			return this.run(() -> setPosition(state.angle));
-		}
-	}
-
 
 }

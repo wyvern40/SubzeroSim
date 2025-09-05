@@ -33,31 +33,51 @@ public class Superstructure extends SubsystemBase {
 	private Superstructure() {}
 	
 	private void swapState(SuperstructureState state) {
-		swerve.requestState(state.data.getSwerveState());
-		elevator.requestState(state.data.getElevatorState());
-		arm.requestState(state.data.getArmState());
-		intake.requestState(state.data.getIntakeState());
-	}
+		this.currentState = state;
 
-	public Command requestState(SuperstructureState state) {
-		return this.runOnce(() -> {
-			if(currentState.getConnectedStates().contains(state)) {
-				currentState = state;
-				swapState(state);
-			}
-		});
+		swerve.swapState(state.data.getSwerveState());
+		elevator.swapState(state.data.getElevatorState());
+		arm.swapState(state.data.getArmState());
+		intake.swapState(state.data.getIntakeState());
 	}
 
 	public void simulationPeriodic() {
 
 		switch(currentState) {
 			case DRIVE_TO_REEF -> {
-				if(arm.atSetpoint()) {
+				if(swerve.atTargetPose()) {
 					requestState(targetReefState);
+				}
+			}
+			case L2_ALIGN -> {
+				if(arm.atSetpoint() && elevator.atSetpoint() && swerve.atTargetPose()) {
+					requestState(SuperstructureState.L2_SCORE);
+				}
+			}
+			case L3_ALIGN -> {
+				if(arm.atSetpoint() && elevator.atSetpoint() && swerve.atTargetPose()) {
+					requestState(SuperstructureState.L3_SCORE);
+				}
+			}
+			case L4_ALIGN -> {
+				if(arm.atSetpoint() && elevator.atSetpoint() && swerve.atTargetPose()) {
+					requestState(SuperstructureState.L4_SCORE);
+				}
+			}
+			case L2_SCORE, L3_SCORE, L4_SCORE -> {
+				if(arm.atSetpoint()) {
+					requestState(SuperstructureState.STOW);
 				}
 			}
 			default -> {}
 		}
+	}
 
+	public Command requestState(SuperstructureState requestedState) {
+		return this.runOnce(() -> {
+			if(currentState.getConnectedStates().contains(requestedState)) {
+				swapState(requestedState);
+			}
+		});
 	}
 }
