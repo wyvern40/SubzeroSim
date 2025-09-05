@@ -182,7 +182,6 @@ public class SwerveDrive extends TunerSwerveDrivetrain implements Subsystem {
     }
 
     private Command alignToReef() {
-
         var nearestPose = this.getState().Pose.nearest(Arrays.asList(FieldConstants.REEF_FACES));
 
         return autoDriveCommand = new DriveToPoseCommand(

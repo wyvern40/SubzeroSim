@@ -115,7 +115,7 @@ public class Telemetry {
         ElevatorData data = elevatorSupplier.get();
 
         mechanismPoseArray[1] = new Pose3d(
-            new Translation3d(0.0, 0.0, Math.max(0.0, data.position.in(Meters) - ElevatorConstants.MAX_CARRIAGE_DISTANCE.in(Meters))),
+            new Translation3d(0.0, 0.0, Math.max(0.0, data.position.in(Meters) - ElevatorConstants.maxCarriageDistance.in(Meters))),
             new Rotation3d()
         );
 

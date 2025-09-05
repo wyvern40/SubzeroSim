@@ -32,6 +32,9 @@ public class ElevatorConstants  {
 	public static final Mass mass = Pounds.of(10.95);
 	public static final Distance spoolRadius = Inches.of(0.75); 
 
+	// Max height the Carriage can travel to without moving the first stage
+	public static final Distance maxCarriageDistance = Inches.of(26);
+
 	public static final double rotationsToDistance = (2.0 * Math.PI * spoolRadius.in(Meters)) / gearRatio;
 	public static final double distanceToRotations = gearRatio / ((2.0 * Math.PI * spoolRadius.in(Meters)));
 

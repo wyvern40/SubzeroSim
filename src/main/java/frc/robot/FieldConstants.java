@@ -29,6 +29,30 @@ public class FieldConstants {
         }
     }
 
+    public enum BranchHeight {
+        L2,
+        L3,
+        L4;
+
+        public BranchHeight higher() {
+            switch(this) {
+               case L2 -> {return L3;}
+               case L3 -> {return L4;}
+               case L4 -> {return L4;}
+               default -> {return L4;}
+            }
+        }
+
+        public BranchHeight lower() {
+            switch(this) {
+               case L2 -> {return L2;}
+               case L3 -> {return L2;}
+               case L4 -> {return L3;}
+               default -> {return L2;}
+            }
+        }
+    }
+
     public static final Pose2d[] REEF_FACES = new Pose2d[6];
 
     static {

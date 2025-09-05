@@ -10,22 +10,14 @@ import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.FieldConstants.BranchSide;
-import frc.robot.subsystems.Arm.Arm;
-import frc.robot.subsystems.Arm.Arm.ArmState;
-import frc.robot.subsystems.Elevator.Elevator;
-import frc.robot.subsystems.Intake.Intake;
 import frc.robot.subsystems.Superstructure.Superstructure;
+import frc.robot.subsystems.Superstructure.SuperstructureState;
 import frc.robot.subsystems.Swerve.SwerveDrive;
 import frc.robot.subsystems.Swerve.TunerConstants;
 
-/**
- * This class is where the bulk of the robot should be declared. Since Command-based is a
- * "declarative" paradigm, very little robot logic should actually be handled in the {@link Robot}
- * periodic methods (other than the scheduler calls). Instead, the structure of the robot (including
- * subsystems, commands, and trigger mappings) should be declared here.
- */
 public class RobotController {
 
 	private double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond);
@@ -38,25 +30,14 @@ public class RobotController {
 	
 	private final CommandXboxController controller = new CommandXboxController(0);
 
+	private final Superstructure superstructure = Superstructure.getInstance();
+
 	private final SwerveDrive swerve = SwerveDrive.getInstance();
-
-	private final Intake intake = Intake.getInstance();
-
-	private final Elevator elevator = Elevator.getInstance();
-
-	private final Arm arm = Arm.getInstance();
 
 	private final Telemetry telemetry = new Telemetry();
 
   	public RobotController() {
     	configureBindings();
-
-
-		telemetry.registerSuppliers(
-			() -> intake.getData(),
-			() -> elevator.getData(),
-			() -> arm.getData()
-		);
 
 		swerve.registerTelemetry(telemetry::updateSwerveTelemetry);
   	}
@@ -64,16 +45,22 @@ public class RobotController {
   	private void configureBindings() {
 
 		swerve.setDefaultCommand(
-            swerve.applyRequest(() ->
+            swerve.applyRequest(() -> 
                 drive.withVelocityX(-controller.getLeftY() * MaxSpeed) // Drive forward with negative Y (forward)
                     .withVelocityY(-controller.getLeftX() * MaxSpeed) // Drive left with negative X (left)
                     .withRotationalRate(-controller.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
             )
         );
 
-		//controller.leftBumper().onTrue(superstructure.scoreCoral(BranchSide.LEFT));
-		//controller.rightBumper().onTrue(superstructure.scoreCoral(BranchSide.RIGHT));
+		//controller.leftBumper()
+		//	.onTrue(superstructure.requestState(SuperstructureState.DRIVE_TO_REEF)
+		//	.andThen(superstructure.setTargetSide(BranchSide.LEFT));
+		//)
 		
+		//controller.rightBumper()
+		//	.onTrue(superstructure.setTargetSide(BranchSide.RIGHT)
+		//	.andThen(superstructure.requestState(SuperstructureState.DRIVE_TO_REEF));
+		//)
   	}
 
 	public void updateTelemetry() {
@@ -83,14 +70,8 @@ public class RobotController {
 		telemetry.updateArmTelemetry();
 	}
 
-	public void initSuperstructure() {
-		//superstructure.initState();
-	}
-
 	public Command getAutoCommand() {
-		return arm.requestState(ArmState.CORAL_ALIGN);
+		return Commands.none();
 	}
-
-	
 
 }
