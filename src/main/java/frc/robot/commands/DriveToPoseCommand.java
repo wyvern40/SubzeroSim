@@ -21,7 +21,6 @@ public class DriveToPoseCommand extends Command {
     private final ProfiledPIDController thetaController = new ProfiledPIDController(15.0, 0, 0.05, new Constraints(Math.PI * 2.0, Math.PI));
 
     private final boolean limitChassisSpeeds;
-
     
     public DriveToPoseCommand(Pose2d targetPose, boolean limitChassisSpeeds) {
 
@@ -74,7 +73,6 @@ public class DriveToPoseCommand extends Command {
             );
 
         }
-
 
         swerve.setControl(new SwerveRequest.ApplyRobotSpeeds().withSpeeds(speeds));
 

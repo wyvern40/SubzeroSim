@@ -11,7 +11,7 @@ import lombok.Builder;
 @Getter
 @Builder
 public class SuperstructureStateData {
-    @Builder.Default public SwerveState swerveState = SwerveState.DRIVER_CONTROL;
+    @Builder.Default private SwerveState swerveState = SwerveState.DRIVER_CONTROL;
     @Builder.Default private ElevatorState elevatorState = ElevatorState.CORAL_STOW;
     @Builder.Default private ArmState armState = ArmState.CORAL_STOW;
     @Builder.Default private IntakeState intakeState = IntakeState.STOW;

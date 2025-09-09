@@ -48,7 +48,7 @@ public class Intake extends SubsystemBase {
 		}
 	}
 
-	@Getter
+	
 	public class IntakeData {
 
 		@Logged(name = "State")
@@ -64,6 +64,7 @@ public class Intake extends SubsystemBase {
 		
 	}
 
+	@Getter
 	@Logged(name = "Data")
 	private IntakeData data;
 

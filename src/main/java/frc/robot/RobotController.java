@@ -13,6 +13,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.FieldConstants.BranchSide;
+import frc.robot.FieldConstants.GamePiece;
 import frc.robot.subsystems.Superstructure.Superstructure;
 import frc.robot.subsystems.Superstructure.SuperstructureState;
 import frc.robot.subsystems.Swerve.SwerveDrive;
@@ -34,12 +35,8 @@ public class RobotController {
 
 	private final SwerveDrive swerve = SwerveDrive.getInstance();
 
-	private final Telemetry telemetry = new Telemetry();
-
   	public RobotController() {
     	configureBindings();
-
-		swerve.registerTelemetry(telemetry::updateSwerveTelemetry);
   	}
 
   	private void configureBindings() {
@@ -52,23 +49,31 @@ public class RobotController {
             )
         );
 
-		//controller.leftBumper()
-		//	.onTrue(superstructure.requestState(SuperstructureState.DRIVE_TO_REEF)
-		//	.andThen(superstructure.setTargetSide(BranchSide.LEFT));
-		//)
+		controller.leftBumper().onTrue(
+			superstructure.setTargetSide(BranchSide.LEFT)
+			.andThen(superstructure.requestState(SuperstructureState.DRIVE_TO_REEF))
+		);
 		
-		//controller.rightBumper()
-		//	.onTrue(superstructure.setTargetSide(BranchSide.RIGHT)
-		//	.andThen(superstructure.requestState(SuperstructureState.DRIVE_TO_REEF));
-		//)
-  	}
+		controller.rightBumper().onTrue(
+			superstructure.setTargetSide(BranchSide.RIGHT)
+			.andThen(superstructure.requestState(SuperstructureState.DRIVE_TO_REEF))
+		);
+		
+		controller.a().and(() -> superstructure.getCurrentState() != SuperstructureState.INTAKE_CORAL).onTrue(
+			superstructure.requestState(SuperstructureState.INTAKE_CORAL)
+			.andThen(superstructure.setGamePiece(GamePiece.CORAL))
+		);
 
-	public void updateTelemetry() {
-		telemetry.updateSuperstructureTelemetry();
-		telemetry.updateIntakeTelemetry();
-		telemetry.updateElevatorTelemetry();
-		telemetry.updateArmTelemetry();
-	}
+		controller.a().and(() -> superstructure.getCurrentState() == SuperstructureState.INTAKE_CORAL).onTrue(
+			superstructure.requestState(SuperstructureState.STOW)
+			.andThen(superstructure.setGamePiece(GamePiece.CORAL))
+		);
+
+		controller.povDown().onTrue(
+			superstructure.forceReset()
+		);
+
+  	}
 
 	public Command getAutoCommand() {
 		return Commands.none();

@@ -171,7 +171,7 @@ public class SwerveDrive extends TunerSwerveDrivetrain implements Subsystem {
 
     private Command driveToReef() {
 
-        var nearestPose = this.getState().Pose.nearest(Arrays.asList(FieldConstants.REEF_FACES));
+        var nearestPose = this.getState().Pose.nearest(Arrays.asList(FieldConstants.reefFaces));
 
         return autoDriveCommand = new DriveToPoseCommand(
             nearestPose.transformBy(
@@ -182,7 +182,7 @@ public class SwerveDrive extends TunerSwerveDrivetrain implements Subsystem {
     }
 
     private Command alignToReef() {
-        var nearestPose = this.getState().Pose.nearest(Arrays.asList(FieldConstants.REEF_FACES));
+        var nearestPose = this.getState().Pose.nearest(Arrays.asList(FieldConstants.reefFaces));
 
         return autoDriveCommand = new DriveToPoseCommand(
             nearestPose.transformBy(

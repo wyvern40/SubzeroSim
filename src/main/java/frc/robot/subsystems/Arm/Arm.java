@@ -47,7 +47,6 @@ public class Arm extends SubsystemBase {
 		}
     }
 
-    @Getter
     public class ArmData {
 
         @Logged(name = "State")
@@ -65,6 +64,7 @@ public class Arm extends SubsystemBase {
 
     }
 
+    @Getter
     @Logged(name = "Data")
     private final ArmData data = new ArmData();
 

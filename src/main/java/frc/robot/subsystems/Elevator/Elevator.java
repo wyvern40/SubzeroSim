@@ -51,7 +51,6 @@ public class Elevator extends SubsystemBase {
 		}
 	}
 
-	@Getter
 	public class ElevatorData {
 
 		@Logged(name = "State")
@@ -74,6 +73,7 @@ public class Elevator extends SubsystemBase {
 		
 	}
 
+	@Getter
 	@Logged(name = "Data")
 	private final ElevatorData data = new ElevatorData();
 
