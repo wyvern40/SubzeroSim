@@ -14,12 +14,15 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.FieldConstants.BranchSide;
 import frc.robot.FieldConstants.GamePiece;
+import frc.robot.subsystems.Arm.Arm;
+import frc.robot.subsystems.Elevator.Elevator;
+import frc.robot.subsystems.Intake.Intake;
 import frc.robot.subsystems.Superstructure.Superstructure;
 import frc.robot.subsystems.Superstructure.SuperstructureState;
 import frc.robot.subsystems.Swerve.SwerveDrive;
 import frc.robot.subsystems.Swerve.TunerConstants;
 
-public class RobotController {
+public class RobotContainer {
 
 	private double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond);
     private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond);
@@ -31,11 +34,14 @@ public class RobotController {
 	
 	private final CommandXboxController controller = new CommandXboxController(0);
 
-	private final Superstructure superstructure = Superstructure.getInstance();
+	private final SwerveDrive swerve = TunerConstants.createDrivetrain();
+	private final Intake intake = new Intake();
+	private final Elevator elevator = new Elevator();
+	private final Arm arm = new Arm();
 
-	private final SwerveDrive swerve = SwerveDrive.getInstance();
+	private final Superstructure superstructure = new Superstructure(swerve, intake, elevator, arm);
 
-  	public RobotController() {
+  	public RobotContainer() {
     	configureBindings();
   	}
 

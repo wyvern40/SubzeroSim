@@ -25,16 +25,6 @@ import lombok.Getter;
 
 public class Arm extends SubsystemBase {
     
-    private static Arm instance;
-
-    public static synchronized Arm getInstance() {
-		if (instance == null) {
-			instance = new Arm();
-		}
-
-		return instance;
-	}
-
     public enum ArmState {
         CORAL_STOW(ArmConstants.coralStowSetpoint),
         CORAL_ALIGN(ArmConstants.coralAlignSetpoint),
@@ -62,6 +52,11 @@ public class Arm extends SubsystemBase {
         @Logged(name = "Target Velocity")
         public AngularVelocity targetVelocity;
 
+        @Logged(name = "Roller Position")
+        public Angle rollerPosition;
+        @Logged(name = "Roller Velocity")
+        public AngularVelocity rollerVelocity;
+
     }
 
     @Getter
@@ -70,9 +65,12 @@ public class Arm extends SubsystemBase {
 
     private ArmState state = ArmState.CORAL_STOW;
 
-    private final TalonFX pivotMotor = new TalonFX(ArmConstants.motorID);
+    private final TalonFX pivotMotor = new TalonFX(ArmConstants.pivotMotorID);
     private final TalonFXSimState pivotMotorSim = pivotMotor.getSimState();
 
+    private final TalonFX rollerMotor = new TalonFX(ArmConstants.rollerMotorID);
+    private final TalonFXSimState rollerMotorSim = pivotMotor.getSimState();
+    
     private final MotionMagicVoltage motionMagic = new MotionMagicVoltage(ArmConstants.startingAngle);
 
     private final SingleJointedArmSim armSim = new SingleJointedArmSim(
@@ -86,8 +84,9 @@ public class Arm extends SubsystemBase {
         ArmConstants.startingAngle.in(Radians)
     );
 
-    private Arm() {
-        setUpMotors();
+    public Arm() {
+        setUpPivotMotor();
+        setUpRollerMotor();
     }
 
     private void applyPIDConfigs() {
@@ -101,22 +100,22 @@ public class Arm extends SubsystemBase {
             .withKV(ArmConstants.kA.get())
             .withGravityType(GravityTypeValue.Arm_Cosine);
 
-        talonFXConfigs.MotionMagic.MotionMagicCruiseVelocity = ArmConstants.profileMaxVelocity.get();
-		talonFXConfigs.MotionMagic.MotionMagicAcceleration = ArmConstants.profileMaxAcceleration.get();
+        talonFXConfigs.MotionMagic.MotionMagicCruiseVelocity = ArmConstants.maxVelocity.get();
+		talonFXConfigs.MotionMagic.MotionMagicAcceleration = ArmConstants.maxAcceleration.get();
 
         pivotMotor.getConfigurator().apply(talonFXConfigs);
     }
 
-    private void setUpMotors() {
+    private void setUpPivotMotor() {
 
         applyPIDConfigs();
 
         var limitConfigs = new CurrentLimitsConfigs();
 
-        limitConfigs.StatorCurrentLimit = ArmConstants.statorCurrentLimit;
+        limitConfigs.StatorCurrentLimit = ArmConstants.pivotStatorCurrentLimit;
 		limitConfigs.StatorCurrentLimitEnable = true;
 
-		limitConfigs.SupplyCurrentLimit = ArmConstants.supplyCurrentLimit;
+		limitConfigs.SupplyCurrentLimit = ArmConstants.pivotSupplyCurrentLimit;
 		limitConfigs.SupplyCurrentLimitEnable = true;
 
         var feedbackConfigs = new FeedbackConfigs().withSensorToMechanismRatio(ArmConstants.gearRatio);
@@ -126,8 +125,20 @@ public class Arm extends SubsystemBase {
 
     }
 
+    private void setUpRollerMotor() {
+        var limitConfigs = new CurrentLimitsConfigs();
+
+        limitConfigs.StatorCurrentLimit = ArmConstants.rollerStatorCurrentLimit;
+		limitConfigs.StatorCurrentLimitEnable = true;
+
+		limitConfigs.SupplyCurrentLimit = ArmConstants.rollerSupplyCurrentLimit;
+		limitConfigs.SupplyCurrentLimitEnable = true;
+        
+        rollerMotor.getConfigurator().apply(limitConfigs);
+    }
+
     public void simulationPeriodic() {
-		
+
         pivotMotor.setControl(motionMagic
 			.withSlot(0)
 			.withPosition(state.angle)
@@ -139,13 +150,14 @@ public class Arm extends SubsystemBase {
             ArmConstants.kG.hasChanged() ||
             ArmConstants.kV.hasChanged() ||
             ArmConstants.kA.hasChanged() ||
-            ArmConstants.profileMaxVelocity.hasChanged() ||
-            ArmConstants.profileMaxAcceleration.hasChanged()
+            ArmConstants.maxVelocity.hasChanged() ||
+            ArmConstants.maxAcceleration.hasChanged()
         ) {
             applyPIDConfigs();
         }
 
 		pivotMotorSim.setSupplyVoltage(RobotController.getBatteryVoltage());
+        rollerMotorSim.setSupplyVoltage(RobotController.getBatteryVoltage());
 
 		armSim.setInput(pivotMotor.getMotorVoltage().getValueAsDouble());
 
@@ -161,6 +173,9 @@ public class Arm extends SubsystemBase {
 
 		data.targetPosition = Rotations.of(pivotMotor.getClosedLoopReference().getValue());
         data.targetVelocity = RotationsPerSecond.of(pivotMotor.getClosedLoopReferenceSlope().getValue());
+
+        data.rollerPosition = rollerMotor.getPosition().getValue();
+        data.rollerVelocity = rollerMotor.getVelocity().getValue();
 
 		data.state = state;
 	}

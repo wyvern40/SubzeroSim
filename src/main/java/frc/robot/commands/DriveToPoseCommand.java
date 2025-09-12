@@ -13,7 +13,7 @@ import frc.robot.subsystems.Swerve.SwerveDrive;
 
 public class DriveToPoseCommand extends Command {
 
-    private final SwerveDrive swerve = SwerveDrive.getInstance();
+    private final SwerveDrive swerve;
 
     private final PIDController xController = new PIDController(5.0, 0, 0.0);
     private final PIDController yController = new PIDController(5.0, 0, 0.0);
@@ -22,7 +22,9 @@ public class DriveToPoseCommand extends Command {
 
     private final boolean limitChassisSpeeds;
     
-    public DriveToPoseCommand(Pose2d targetPose, boolean limitChassisSpeeds) {
+    public DriveToPoseCommand(SwerveDrive swerve, Pose2d targetPose, boolean limitChassisSpeeds) {
+
+        this.swerve = swerve;
 
         this.limitChassisSpeeds = limitChassisSpeeds;
 

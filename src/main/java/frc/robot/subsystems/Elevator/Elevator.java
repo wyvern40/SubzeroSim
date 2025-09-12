@@ -28,16 +28,6 @@ import lombok.Getter;
 
 public class Elevator extends SubsystemBase {
     
-	private static Elevator instance;
-
-	public static synchronized Elevator getInstance() {
-		if (instance == null) {
-			instance = new Elevator();
-		}
-
-		return instance;
-	}
-
 	public enum ElevatorState {
 		CORAL_STOW(ElevatorConstants.coralStowSetpoint),
         L2(ElevatorConstants.coralL2Setpoint),
@@ -77,7 +67,7 @@ public class Elevator extends SubsystemBase {
 	@Logged(name = "Data")
 	private final ElevatorData data = new ElevatorData();
 
-	private ElevatorState state;
+	private ElevatorState state = ElevatorState.CORAL_STOW;
 
 	private final TalonFX leaderMotor = new TalonFX(ElevatorConstants.leaderMotorID);
     private final TalonFX followerMotor = new TalonFX(ElevatorConstants.followerMotorID);
@@ -97,9 +87,8 @@ public class Elevator extends SubsystemBase {
 		ElevatorConstants.startingPosition.in(Meters)
 	);
 
-	private Elevator() {
+	public Elevator() {
 		setUpMotors();
-		state = ElevatorState.CORAL_STOW;
 	}
 
 	private void applyPIDConfigs() {

@@ -18,22 +18,29 @@ public class ArmConstants {
 	public static final Angle coralStowSetpoint = Degrees.of(-90.0);
     public static final Angle coralAlignSetpoint = Degrees.of(45.0);
     public static final Angle coralScoreSetpoint = Degrees.of(30.0);
+
+    public static final double coralHandoffSpeed = 1.0;
+    public static final double algaeThrowSpeed = 1.0;
     
-	public static final double statorCurrentLimit = 120.0;
-	public static final double supplyCurrentLimit = 40.0;
+	public static final double pivotStatorCurrentLimit = 120.0;
+	public static final double pivotSupplyCurrentLimit = 40.0;
+
+    public static final double rollerStatorCurrentLimit = 120.0;
+	public static final double rollerSupplyCurrentLimit = 40.0;
 
 	public static final double gearRatio = 67.5;
 
-	public static final int motorID = 46;
+	public static final int pivotMotorID = 46;
+    public static final int rollerMotorID = 47;
 
 	public static final double moi = 0.10113578;
 	public static final Distance length = Meters.of(0.57022782);
 
-    public static final LoggedTunableNumber profileMaxVelocity = 
-        new LoggedTunableNumber("/Arm/Profile/Max Velocity", 2.0);
+    public static final LoggedTunableNumber maxVelocity = 
+        new LoggedTunableNumber("/Arm/Profile Max Velocity", 2.0);
 
-    public static final LoggedTunableNumber profileMaxAcceleration = 
-        new LoggedTunableNumber("/Arm/Profile/Max Acceleration", 4.0);
+    public static final LoggedTunableNumber maxAcceleration = 
+        new LoggedTunableNumber("/Arm/Profile Max Acceleration", 4.0);
     
     public static final LoggedTunableNumber kP = 
         new LoggedTunableNumber("/Arm/PID/kP", 10.0);

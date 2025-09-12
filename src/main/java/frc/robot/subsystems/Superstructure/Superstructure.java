@@ -13,16 +13,6 @@ import frc.robot.util.RobotVisualizer;
 import lombok.Getter;
 
 public class Superstructure extends SubsystemBase {
-    
-    private static Superstructure instance;
-
-    public static synchronized Superstructure getInstance() {
-		if (instance == null) {
-			instance = new Superstructure();
-		}
-
-		return instance;
-	}
 	
 	@Getter
 	@Logged(name = "State")
@@ -34,15 +24,20 @@ public class Superstructure extends SubsystemBase {
 	@Logged(name = "Game Piece")
 	private GamePiece gamePiece = GamePiece.NONE;
 
-	private final SwerveDrive swerve = SwerveDrive.getInstance();
-	private final Intake intake = Intake.getInstance();
-	private final Elevator elevator = Elevator.getInstance();
-	private final Arm arm = Arm.getInstance();
+	private final SwerveDrive swerve;
+	private final Intake intake;
+	private final Elevator elevator;
+	private final Arm arm;
 
 	private final RobotVisualizer visualizer = new RobotVisualizer();
-
-	private Superstructure() {}
 	
+	public Superstructure(SwerveDrive swerve, Intake intake, Elevator elevator, Arm arm) {
+		this.swerve = swerve;
+		this.intake = intake;
+		this.elevator = elevator;
+		this.arm = arm;
+	}
+
 	private void swapState(SuperstructureState state) {
 		this.currentState = state;
 

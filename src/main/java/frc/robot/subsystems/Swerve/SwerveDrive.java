@@ -37,16 +37,6 @@ import frc.robot.subsystems.Swerve.TunerConstants.TunerSwerveDrivetrain;
  */
 public class SwerveDrive extends TunerSwerveDrivetrain implements Subsystem {
     
-    private static SwerveDrive instance;
-
-	public static synchronized SwerveDrive getInstance() {
-		if (instance == null) {
-			instance = TunerConstants.createDrivetrain();
-		}
-
-		return instance;
-	}
-
     public enum SwerveState {
         DRIVER_CONTROL,
         PATH_TO_REEF,
@@ -174,6 +164,7 @@ public class SwerveDrive extends TunerSwerveDrivetrain implements Subsystem {
         var nearestPose = this.getState().Pose.nearest(Arrays.asList(FieldConstants.reefFaces));
 
         return autoDriveCommand = new DriveToPoseCommand(
+            this,
             nearestPose.transformBy(
                 new Transform2d(SwerveConstants.LINEUP_DISTANCE.unaryMinus(), targetSide.offset.unaryMinus(), Rotation2d.kZero)
             ),
@@ -185,6 +176,7 @@ public class SwerveDrive extends TunerSwerveDrivetrain implements Subsystem {
         var nearestPose = this.getState().Pose.nearest(Arrays.asList(FieldConstants.reefFaces));
 
         return autoDriveCommand = new DriveToPoseCommand(
+            this,
             nearestPose.transformBy(
                 new Transform2d(Meters.of(0.0), targetSide.offset.unaryMinus(), Rotation2d.kZero)
             ),

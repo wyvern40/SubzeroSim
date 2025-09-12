@@ -9,16 +9,15 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 
 public class Robot extends TimedRobot {
 
-	private final RobotController robotController;
+	private final RobotContainer robotContainer;
 
 	public Robot() {
-		robotController = new RobotController();
+		robotContainer = new RobotContainer();
 	}
 
 	@Override
 	public void robotPeriodic() {
 		CommandScheduler.getInstance().run();
-		robotController.updateTelemetry();
 	}
 
 	@Override
@@ -29,7 +28,7 @@ public class Robot extends TimedRobot {
 
 	@Override
 	public void autonomousInit() {
-		var autoCommand = robotController.getAutoCommand();
+		var autoCommand = robotContainer.getAutoCommand();
 
 		if (autoCommand != null) {
 		  	autoCommand.schedule();

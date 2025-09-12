@@ -24,16 +24,6 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import lombok.Getter;
 
 public class Intake extends SubsystemBase {
-    
-	private static Intake instance;
-
-	public static synchronized Intake getInstance() {
-		if (instance == null) {
-			instance = new Intake();
-		}
-
-		return instance;
-	}
 
 	public enum IntakeState {
 		INTAKE(IntakeConstants.pivotIntakeSetpoint, true),
@@ -48,7 +38,6 @@ public class Intake extends SubsystemBase {
 		}
 	}
 
-	
 	public class IntakeData {
 
 		@Logged(name = "State")
@@ -68,7 +57,7 @@ public class Intake extends SubsystemBase {
 	@Logged(name = "Data")
 	private IntakeData data;
 
-	private IntakeState state;
+	private IntakeState state = IntakeState.STOW;
 
 	private final TalonFX pivotMotor = new TalonFX(IntakeConstants.pivotMotorID);
 	private final TalonFX grabMotor = new TalonFX(IntakeConstants.grabMotorID);
@@ -91,13 +80,11 @@ public class Intake extends SubsystemBase {
 		IntakeConstants.startingAngle.in(Radians)
 	);
 
-	private Intake() {
+	public Intake() {
 
 		setUpPivotMotor();
 		setUpGrabMotor();
 		setUpAlignMotor();
-
-		state = IntakeState.STOW;
 
 		this.data = new IntakeData();
 
