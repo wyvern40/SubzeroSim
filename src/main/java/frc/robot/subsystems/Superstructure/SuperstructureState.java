@@ -2,12 +2,12 @@ package frc.robot.subsystems.Superstructure;
 
 import frc.robot.subsystems.Swerve.SwerveDrive.SwerveState;
 import frc.robot.subsystems.Elevator.Elevator.ElevatorState;
+import frc.robot.subsystems.Arm.Arm.ArmState;
+import frc.robot.subsystems.Intake.Intake.IntakeState;
 
 import java.util.HashMap;
 import java.util.List;
 
-import frc.robot.subsystems.Arm.Arm.ArmState;
-import frc.robot.subsystems.Intake.Intake.IntakeState;
 
 public enum SuperstructureState {
     
@@ -68,6 +68,7 @@ public enum SuperstructureState {
         .armState(ArmState.CORAL_SCORE)
         .build()
     );
+    
 
     SuperstructureStateData data;
 

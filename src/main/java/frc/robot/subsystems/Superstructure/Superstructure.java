@@ -21,8 +21,8 @@ public class Superstructure extends SubsystemBase {
 	@Logged(name = "Target Reef State")
 	private SuperstructureState targetReefState = SuperstructureState.L4_ALIGN;
 
-	@Logged(name = "Game Piece")
-	private GamePiece gamePiece = GamePiece.NONE;
+	@Logged(name = "Held Game Piece")
+	private GamePiece heldGamePiece = GamePiece.NONE;
 
 	private final SwerveDrive swerve;
 	private final Intake intake;
@@ -58,7 +58,7 @@ public class Superstructure extends SubsystemBase {
 		// State Transistions
 		switch(currentState) {
 			case DRIVE_TO_REEF -> {
-				if(swerve.atTargetPose() && gamePiece == GamePiece.CORAL) {
+				if(swerve.atTargetPose() && heldGamePiece == GamePiece.CORAL) {
 					requestState(targetReefState);
 				}
 			}
@@ -79,7 +79,7 @@ public class Superstructure extends SubsystemBase {
 			}
 			case L2_SCORE, L3_SCORE, L4_SCORE -> {
 				if(arm.atSetpoint()) {
-					gamePiece = GamePiece.NONE;
+					heldGamePiece = GamePiece.NONE;
 					requestState(SuperstructureState.STOW);
 				}
 			}
@@ -88,17 +88,18 @@ public class Superstructure extends SubsystemBase {
 	}
 
 	public Command setGamePiece(GamePiece gamePiece) {
-		return this.runOnce(() -> this.gamePiece = gamePiece);
+		return this.runOnce(() -> this.heldGamePiece = gamePiece);
 	}
 
 	public Command setTargetSide(BranchSide side) {
 		return this.runOnce(() -> swerve.setTargetSide(side));
 	}
 
-	// Only call when robot is stuck
+	// Only call when robot is stuck between states or needs to cancel it's current action.
+	// No guarantee for robot safety when called (The arm might slam into the intake / drivebase).
 	public Command forceReset() {
 		return this.runOnce(() -> {
-			gamePiece = GamePiece.NONE;
+			heldGamePiece = GamePiece.NONE;
 			swapState(SuperstructureState.STOW);
 		});
 	}
